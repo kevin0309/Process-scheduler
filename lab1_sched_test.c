@@ -32,6 +32,8 @@
  * you need to implement scheduler simlator test code.
  *
  */
+
+// Queue implementation
 struct Queue {
 	int max, front, rear;
 	int *data;
@@ -75,7 +77,7 @@ int qPop(struct Queue *q) {
 }
 
 int main(int argc, char *argv[]){
-	printf("Hello World!\n");
+	/* queue test
 	struct Queue q;
 	qInit(&q, 3);
 	qPush(&q, 1);
@@ -91,5 +93,19 @@ int main(int argc, char *argv[]){
 	printf("%d\n", qPop(&q));
 	printf("%d\n", qPop(&q));
 	printf("%d\n", qPop(&q));
+	*/
+
+	// input ---> int arr[][2] = {{1,2},{{process arrival time},{service time}}}
+	int testData[3][2] = {{0, 5}, {2, 3}, {4, 4}};
+	calcMLFQ(testData, 3, 2);
 }
 
+int* calcMLFQ(int data[][2], int col, int row) {
+	for (int i = 0; i < col; i++) {
+		for (int j = 0; j < row; j++)
+			printf("%d\t", data[i][j]);
+		printf("\n");
+	}
+
+	return data[0];
+}
