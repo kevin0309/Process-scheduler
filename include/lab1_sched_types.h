@@ -1,0 +1,30 @@
+/*
+*	DKU Operating System Lab
+*	    Lab1 (Scheduler Algorithm Simulator)
+*	    Student id : 
+*	    Student name : 
+*
+*   lab1_sched_types.h :
+*       - lab1 header file.
+*       - must contains scueduler algorithm function's declations.
+*
+*/
+
+#ifndef _LAB1_HEADER_H
+#define _LAB1_HEADER_H
+
+
+/*
+ * You need to Declare functions in  here
+ */
+
+int* calcFCFS(int data[][2], int i, int j);
+int* calcRR(int data[][2], int i, int j);
+int* calcMLFQ(int data[][2], int i, int j);
+int* calcLottery(int data[][2], int i, int j);
+
+
+#endif /* LAB1_HEADER_H*/
+
+
+
