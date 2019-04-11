@@ -18,10 +18,12 @@
  * You need to Declare functions in  here
  */
 
-int* calcFCFS(int data[][2], int col);
-int* calcRR(int data[][2], int col, int timeQuantum);
-int* calcMLFQ(int data[][2], int col, int timeQuantum);
-int* calcLottery(int data[][2], int col);
+int* calcFCFS(int data[][2], int col, int *resSize);
+int* calcRR(int data[][2], int col, int timeQuantum, int *resSize);
+int* calcMLFQ(int data[][2], int col, int timeQuantum, int *resSize);
+int* calcLottery(int data[][2], int col, int *resSize);
+
+void printResult(int inputData[][2], int resData[], int col, int resSize);
 
 
 #endif /* LAB1_HEADER_H*/
