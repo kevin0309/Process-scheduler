@@ -108,315 +108,187 @@ int main(int argc, char *argv[]){
 
 	// input ---> int arr[][2] = {{1,2},{{process arrival time},{service time}}}
 	int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
-	calcMLFQ(testData, 5, 2);
-	
+	int mlfqResSize;
+	int *mlfq = calcMLFQ(testData, 5, 2, &mlfqResSize);
+	printf("result : ");
+	for (int i = 0; i < mlfqResSize; i++)
+		printf("%d ", mlfq[i]);
+	printf("\n");
 	return 0;
 }
 
-int* calcMLFQ(int data[][2], int col, int timeQuantum) {
-	if (col == 0) {
-		printf("Empty data!!!\n");
-		return data[0];
-	}
-	//Initialize 3 queues for MLFQ
-	struct Queue l1; qInit(&l1, 100);
-	struct Queue l2; qInit(&l2, 100);
-	struct Queue l3; qInit(&l3, 100);
-	
-	//Analyze input data
-	int maxArriveTime = 0;
-	int minArriveTime = data[0][0];
-	int totalServiceTime = 0; 
-	int *leftServiceTimeArr = malloc(sizeof(int) * col);
-	for (int i = 0; i < col; i++) {
-		if (data[i][0] > maxArriveTime)
-			maxArriveTime = data[i][0];
-		if (data[i][0] < minArriveTime)
-			minArriveTime = data[i][0];
-		totalServiceTime += data[i][1];
-		leftServiceTimeArr[i] = data[i][1];
-	}
-	/////dev
+void printDev(int col, int leftServiceTimeArr[], struct Queue *l1, struct Queue *l2, struct Queue *l3, int procTime, int result[]) {
+	printf("---------------------------------------------------------------------------\n");
 	printf("left service time : ");
 	for (int i = 0; i < col; i++) {
 		printf("%d ", leftServiceTimeArr[i]);
 	}
 	printf("\n");
-	/////
-			
+	printf("l1 : ");
+	qPrint(l1);
+	printf("l2 : ");
+	qPrint(l2);
+	printf("l3 : ");
+	qPrint(l3);
+	printf("result : ");
+	for (int i = 0; i < procTime+1; i++) {
+		switch (result[i]) {
+			case 0:
+				printf("A ");
+				break;
+			case 1:
+				printf("B ");
+				break;
+			case 2:
+				printf("C ");
+				break;
+			case 3:
+				printf("D ");
+				break;
+			case 4:
+				printf("E ");
+				break;
+			case -1:
+				printf("? ");
+		}
+	}
+	printf("\n");
+}
+
+int* calcMLFQ(int data[][2], int col, int timeQuantum, int *resSize) {
+	if (col == 0) {
+		printf("calcMLFQ -> Empty data!!!\n");
+		int err[1] = {-1};
+		return err;
+	}
+	//Initialize 3 queues for MLFQ.
+	struct Queue l1; qInit(&l1, 100);	//highest priority
+	struct Queue l2; qInit(&l2, 100);
+	struct Queue l3; qInit(&l3, 100);	//lowest priority
+	
+	//Analyze input data.
+	int lastArriveTime = 0;									//last arrive time between processes
+	int firstArriveTime = data[0][0];						//first arrive time between processes
+	int totalServiceTime = 0; 								//total process service time from first process arrival	
+	int *leftServiceTimeArr = malloc(sizeof(int) * col);	//remaining service time temporary storage of processes
+	for (int i = 0; i < col; i++) {
+		if (data[i][0] > lastArriveTime)
+			lastArriveTime = data[i][0];
+		if (data[i][0] < firstArriveTime)
+			firstArriveTime = data[i][0];
+		totalServiceTime += data[i][1];
+		leftServiceTimeArr[i] = data[i][1];
+	}
+	
+	//Set empty result data.
 	int *result = malloc(sizeof(int) * totalServiceTime);
 	for (int i = 0; i < totalServiceTime; i++)
 		result[i] = -1;
-	//Main process roof start
-	int procTime = 0;
-	int quantumTimer = timeQuantum;
-	int curProc = -2;
-		printf("current process : %d\n", curProc);
+	
+	//Main process roof start.
+	int procTime = 0;				//CPU process timer
+	int curProc;					//the process currently being processed by CPU
+	int quantumTimer = timeQuantum;	//time quantum counter
 	while (1) {
-		printf("===================================================================================================\nprocess timer : %d\n===================================================================================================\n", procTime);
+		/////
+		//printf("===================================================================================================\nprocess timer : %d\n===================================================================================================\n", procTime);
+		/////
+		
+		//Add new process to Queue1(highest priority) when there is a process currently in procTime.
 		for (int i = 0; i < col; i++)
 			if (data[i][0] == procTime)
 				for (int j = 0; j < data[i][1]; j++)
 					qPush(&l1, i);
 		
-		/////dev
-		printf("---------------------------------------------------------------------------\nadd.\n---------------------------------------------------------------------------\n");
-		printf("left service time : ");
-		for (int i = 0; i < col; i++) {
-			printf("%d ", leftServiceTimeArr[i]);
-		}
-		printf("\n");
-		printf("l1 : ");
-		qPrint(&l1);
-		printf("l2 : ");
-		qPrint(&l2);
-		printf("l3 : ");
-		qPrint(&l3);
-		printf("result : ");
-		for (int i = 0; i < procTime+1; i++) {
-			switch (result[i]) {
-				case 0:
-					printf("A ");
-					break;
-				case 1:
-					printf("B ");
-					break;
-				case 2:
-					printf("C ");
-					break;
-				case 3:
-					printf("D ");
-					break;
-				case 4:
-					printf("E ");
-					break;
-				case -1:
-					printf("? ");
-			}
-		}
-		printf("\n");
+		/////
+		//printf("1. Add ");
+		//printDev(col, leftServiceTimeArr, &l1, &l2, &l3, procTime, result);
 		/////
 		
-			
-		printf("current process : %d, quantum count : %d\n", curProc, quantumTimer);
-		//작업 진행하는 부분 추가 (time quantum 고려) 
+		//When a new process is inserted, if there is a process that was previously running, drop it to the queue below.
 		int latestProc = result[procTime-1];
 		if (qSize(&l1) > 0) {
-			printf("if1 rear: %d\nresult[procTime-1] : %d\n", l1.data[l1.rear+1], latestProc);
+			if (quantumTimer <= 0 && qSize(&l1) + qSize(&l2) + qSize(&l3) > leftServiceTimeArr[latestProc]) {
+				for (int i = 0; i < leftServiceTimeArr[latestProc]; i++)
+					qPush(&l2, qPop(&l1));
+				quantumTimer = timeQuantum;
+			}
+		}
+		else if (qSize(&l2) > 0) {
+			if (quantumTimer <= 0 && qSize(&l1) + qSize(&l2) + qSize(&l3) > leftServiceTimeArr[latestProc]) {
+				for (int i = 0; i < leftServiceTimeArr[latestProc]; i++)
+					qPush(&l3, qPop(&l2));
+				quantumTimer = timeQuantum;
+			}
+		}
+		
+		/////
+		//printf("2. Quantum 1 ");
+		//printDev(col, leftServiceTimeArr, &l1, &l2, &l3, procTime, result);
+		/////
+		
+		//Execute process in the highest priority queue. 
+		if (qSize(&l1) > 0)
+			curProc = qPop(&l1);
+		else if (qSize(&l2) > 0)
+			curProc = qPop(&l2);
+		else
+			curProc = qPop(&l3);
+		result[procTime] = curProc;		//Push to result.
+		leftServiceTimeArr[curProc]--;
+		
+		/////
+		//printf("3. Process ");
+		//printDev(col, leftServiceTimeArr, &l1, &l2, &l3, procTime, result);
+		/////
+		
+		//When there are remaining jobs and there are no other processes scheduled in scheduler, drop it to the queue below.
+		latestProc = result[procTime];
+		if (qSize(&l1) > 0) {
 			if (latestProc == l1.data[l1.rear+1])
 				quantumTimer--;
 			else
 				quantumTimer = timeQuantum;
 			if (quantumTimer <= 0 && qSize(&l1) + qSize(&l2) + qSize(&l3) > leftServiceTimeArr[latestProc]) {
-				printf("tq\n");
-				for (int i = 0; i < leftServiceTimeArr[latestProc]; i++) {
+				for (int i = 0; i < leftServiceTimeArr[latestProc]; i++)
 					qPush(&l2, qPop(&l1));
-				}
 				quantumTimer = timeQuantum;
 			}
 		}
 		else if (qSize(&l2) > 0) {
-			printf("if2 rear: %d\n", l2.data[l2.rear+1]);
 			if (latestProc == l2.data[l2.rear+1])
 				quantumTimer--;
 			else
 				quantumTimer = timeQuantum;
 			if (quantumTimer <= 0 && qSize(&l1) + qSize(&l2) + qSize(&l3) > leftServiceTimeArr[latestProc]) {
-				printf("tq\n");
-				for (int i = 0; i < leftServiceTimeArr[latestProc]; i++) {
+				for (int i = 0; i < leftServiceTimeArr[latestProc]; i++)
 					qPush(&l3, qPop(&l2));
-				}
 				quantumTimer = timeQuantum;
 			}
 		}
-		else
-			quantumTimer = timeQuantum;
+		else { 
+			if (latestProc == l3.data[l3.rear+1])
+				quantumTimer--;
+			else
+				quantumTimer = timeQuantum;
+			if (quantumTimer <= 0) {
+				for (int i = 0; i < leftServiceTimeArr[latestProc]; i++)
+					qPush(&l3, qPop(&l3));	//Push to itself because there is no queue below.
+				quantumTimer = timeQuantum;
+			}
+		}
 			
-		/////dev
-		printf("---------------------------------------------------------------------------\nquantum timer 1.\n---------------------------------------------------------------------------\n");
-		printf("left service time : ");
-		for (int i = 0; i < col; i++) {
-			printf("%d ", leftServiceTimeArr[i]);
-		}
-		printf("\n");
-		printf("l1 : ");
-		qPrint(&l1);
-		printf("l2 : ");
-		qPrint(&l2);
-		printf("l3 : ");
-		qPrint(&l3);
-		printf("result : ");
-		for (int i = 0; i < procTime+1; i++) {
-			switch (result[i]) {
-				case 0:
-					printf("A ");
-					break;
-				case 1:
-					printf("B ");
-					break;
-				case 2:
-					printf("C ");
-					break;
-				case 3:
-					printf("D ");
-					break;
-				case 4:
-					printf("E ");
-					break;
-				case -1:
-					printf("? ");
-			}
-		}
-		printf("\n");
-		/////	
-		
-		if (qSize(&l1) > 0) {
-			curProc = qPop(&l1);
-		}
-		else if (qSize(&l2) > 0) {
-			curProc = qPop(&l2);
-		}
-		else {
-			curProc = qPop(&l3);
-		}
-		result[procTime] = curProc;
-		leftServiceTimeArr[curProc]--;
-		
-		/////dev
-		printf("---------------------------------------------------------------------------\nprocess.\n---------------------------------------------------------------------------\n");
-		printf("left service time : ");
-		for (int i = 0; i < col; i++) {
-			printf("%d ", leftServiceTimeArr[i]);
-		}
-		printf("\n");
-		printf("l1 : ");
-		qPrint(&l1);
-		printf("l2 : ");
-		qPrint(&l2);
-		printf("l3 : ");
-		qPrint(&l3);
-		printf("result : ");
-		for (int i = 0; i < procTime+1; i++) {
-			switch (result[i]) {
-				case 0:
-					printf("A ");
-					break;
-				case 1:
-					printf("B ");
-					break;
-				case 2:
-					printf("C ");
-					break;
-				case 3:
-					printf("D ");
-					break;
-				case 4:
-					printf("E ");
-					break;
-				case -1:
-					printf("? ");
-			}
-		}
-		printf("\n");
+		/////
+		//printf("4. Quantum ");
+		//printDev(col, leftServiceTimeArr, &l1, &l2, &l3, procTime, result);
 		/////
 		
-		printf("current process : %d, quantum count : %d\n", curProc, quantumTimer);
-		//작업 진행하는 부분 추가 (time quantum 고려) 
-		int latestProc2 = result[procTime];
-		if (qSize(&l1) > 0) {
-			printf("if1 rear: %d\nresult[procTime] : %d\n", l1.data[l1.rear+1], latestProc2);
-			/*if (latestProc2 == l1.data[l1.rear+1])
-				quantumTimer--;
-			else
-				quantumTimer = timeQuantum;*/
-			if (quantumTimer <= 0 && qSize(&l1) + qSize(&l2) + qSize(&l3) > leftServiceTimeArr[latestProc2]) {
-				printf("tq\n");
-				for (int i = 0; i < leftServiceTimeArr[latestProc2]; i++) {
-					qPush(&l2, qPop(&l1));
-				}
-				quantumTimer = timeQuantum;
-			}
-		}
-		else if (qSize(&l2) > 0) {
-			printf("if2 rear: %d\n", l2.data[l2.rear+1]);
-			/*if (latestProc2 == l2.data[l2.rear+1])
-				quantumTimer--;
-			else
-				quantumTimer = timeQuantum;*/
-			if (quantumTimer <= 0 && qSize(&l1) + qSize(&l2) + qSize(&l3) > leftServiceTimeArr[latestProc2]) {
-				printf("tq\n");
-				for (int i = 0; i < leftServiceTimeArr[latestProc2]; i++) {
-					qPush(&l3, qPop(&l2));
-				}
-				quantumTimer = timeQuantum;
-			}
-		}
-		else {
-			quantumTimer = timeQuantum;
-			if (curProc == l3.data[l3.rear+1]) {
-				for (int i = 0; i < leftServiceTimeArr[curProc]-1; i++) {
-					qPush(&l3, qPop(&l3));
-				}
-			}
-		}
-			
-		/////dev
-		printf("---------------------------------------------------------------------------\nquantum timer 2.\n---------------------------------------------------------------------------\n");
-		printf("left service time : ");
-		for (int i = 0; i < col; i++) {
-			printf("%d ", leftServiceTimeArr[i]);
-		}
-		printf("\n");
-		printf("l1 : ");
-		qPrint(&l1);
-		printf("l2 : ");
-		qPrint(&l2);
-		printf("l3 : ");
-		qPrint(&l3);
-		printf("result : ");
-		for (int i = 0; i < procTime+1; i++) {
-			switch (result[i]) {
-				case 0:
-					printf("A ");
-					break;
-				case 1:
-					printf("B ");
-					break;
-				case 2:
-					printf("C ");
-					break;
-				case 3:
-					printf("D ");
-					break;
-				case 4:
-					printf("E ");
-					break;
-				case -1:
-					printf("? ");
-			}
-		}
-		printf("\n");
-		/////	
-		
 		procTime++;
-		//break condition 1. Exit when all services are finised
-		if (procTime > minArriveTime + totalServiceTime) {
-			printf("service finished (condition 1)\n");
+		//Exit when procTime is appropriate or the queues are all empty
+		if (procTime > lastArriveTime && qSize(&l1) == 0 && qSize(&l2) == 0 && qSize(&l3) == 0)
 			break;
-		}
-		//break condition 2. Exit when procTime is appropriate or the queues are all empty
-		if (procTime > maxArriveTime && qSize(&l1) == 0 && qSize(&l2) == 0 && qSize(&l3) == 0) {
-			printf("service finished (condition 2)\n");
-			break;
-		}
-		
-		/*if (procTime == 5) {
-			qPrint(&l1);
-			qPrint(&l2);
-			qPrint(&l3);
-			break;
-		}*/
 	}
+	*resSize = totalServiceTime;
 	return result;
 }
 
