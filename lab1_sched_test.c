@@ -115,8 +115,8 @@ int main(int argc, char *argv[]){
 	printf("%d\n", qPop(&q));*/
 
 	// input ---> int arr[][2] = {{1,2},{{process arrival time},{service time}}}
-	int testData[3][2] = { {2, 3} ,{0, 5},  {4, 4}};
-	int i[3][2]=sortProcess(testData,3);
+	int testData[5][2] = { {0,3} ,{2 ,6}, {4, 4},{6,5},{8,2}};
+	int i[5  ][2]=sortProcess(testData,5);
 	//calcMLFQ(testData, 3, 1);
 	
 	return 0;
@@ -236,30 +236,63 @@ int* calcRR(int data[][2], int col, int timeQuantum) {
 	int totalProcessTime=calcTotalProcessTime(data[][2]);
 	int resultData[totalProcessTime];
 	int realTime=0;
+	int temp=-1;
 	struct Queue q;
 	qInit(&q, totalProcessTime);
+	int serviceData[col];
+	
+	for(int i=0;i<col;i++){
+		serviceData[i]=data[i][1];
+	}//실행정보
+	
 	while(1){
 		for(int i=0;i<col;i++){
-			if(realTime<data[i][0])
-				break;
-			for(int j=0;j<timeQuantum;j++){
-				if(data[i][1]==0)
-					break;
-				qPush(&q, i);
-				data[i][1]--;
-				realTime++;
-			}	
+			int totalProcessTime+=serviceData[i][1];
 		}
-		if(calcTotalProcessTime(data[][2])==0)
-			break;
+		for(int i=0;i<col;i++){//도달한 프로세스면 시간만큼 넣어주세요.
+			if(realTime>=data[i][0]){
+				if(serviceData[i][1]==data[i][1]){
+					for(int j=0; j<serviceData[i];j++){
+						qPush(&q,i);
+					}
+				}
+			}
+		}
+		for(int i=0; i<timeQuantum;i++){// 주어진 시간만큼 실행
+			realTime++;
+			resultData[realTime]=temp=qPop(&q);
+			serviceData[temp]--;
+			if(temp!=q.data[q.rear+1])
+				break;
+		}
+		
+		if(temp==q.data[q.rear+1]){//아직 못끝낸 작업이있을?
+			while(temp==q.data[q.rear+1])
+				qPush(&q,qPop(&q));
+		}
+		
+			if(totalProcessTime==0)
+				break;
 	}
-	while(qSize(&q)!=0){
-		resultData[i]=qPop(&q);
-		i++;
-	}
+	
 	return resultData;
 }
-
+/*whileile(1){
+			for(int i=0;i<col;i++){  
+				if(realTime<data[i][0])
+					break;
+				for(int j=0;j<timeQuantum;j++){
+					if(data[i][1]==0)
+						break;
+					qPush(&q, i);
+					data[i][1]--;
+					realTime++;
+				}	
+			}
+			if(calcTotalProcessTime(data[][2])==0)
+				break;
+		}
+		*/
 
 
 
