@@ -87,10 +87,10 @@ void qPrint(struct Queue *q) {
 	printf("]\n");
 }
 
-int calcTotalProcessTime(int data[][2]) {
+int calcTotalProcessTime(int data[][2],int col) {
 	int result=0;
-	for (int i=0; i < 3; i++) {
-		result += data[i][1];
+	for (int i=0; i < col; i++) {
+		result = result + data[i][1];
 	}
 	return result;
 }
@@ -115,9 +115,8 @@ int main(int argc, char *argv[]){
 	printf("%d\n", qPop(&q));*/
 
 	// input ---> int arr[][2] = {{1,2},{{process arrival time},{service time}}}
-	int testData[5][2] = { {0,3} ,{2 ,6}, {4, 4},{6,5},{8,2}};
-	int i[5  ][2]=sortProcess(testData,5);
-	//calcMLFQ(testData, 3, 1);
+	int testData[5][2] = {{0,3},{2,6},{6,5},{8,2},{4,4}};
+	calcRR(testData, 5, 1);
 	
 	return 0;
 }
@@ -181,25 +180,24 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum) {
 	return result;
 }
 
-int* sortProcess(int data[][2], int col) {
-	int tempData[3][2];
+/*
+int** sortProcess(int data[][2], int col) {
+	int tempData[col][2];
 	int tempX, tempY;
-	for (int i = 0; i < 3; i++) {
-		for (for j = 0; j < 2; j++) {
+	for (int i = 0; i < col; i++) {
+		for (int j = 0; j < 2; j++) {
 			tempData[i][j] = data[i][j];
 		}
 	}
-	for(int j=3-1;j>0;j--){
-		for (int i = 0; i < 3; i++) {
-			if ((i + 1) != 3) {
-				if (tempData[i][0] > tempData[i + 1][0]) {
-					tempX = tempData[i][0];
-					tempY = tempData[i][1];
-					tempData[i][0] = tempData[i + 1][0];
-					tempData[i][1] = tempData[i + 1][1];
-					tempData[i + 1][0] = tempX;
-					tempData[i + 1][1] = tempX;
-				}
+	for(int j=col-1;j>0;j--){
+		for (int i = 0; i < col-1; i++) {
+			if (tempData[i][0] > tempData[i + 1][0]) {
+				tempX = tempData[i][0];
+				tempY = tempData[i][1];
+				tempData[i][0] = tempData[i + 1][0];
+				tempData[i][1] = tempData[i + 1][1];
+				tempData[i + 1][0] = tempX;
+				tempData[i + 1][1] = tempX;
 			}
 		}
 	}
@@ -207,12 +205,12 @@ int* sortProcess(int data[][2], int col) {
 		printf("{ %d,%d } \n", tempData[i][0], tempData[i][1]);
 	}
 
-	return tempData;
-}
-
+	return tempData[5][2];
+}*/
+/*
 int* calcFCFS(int data[][2], int col) {
 	//sortProcess
-	int totalProcessTime = calcTotalProcessTime(int data[][2]);
+	int totalProcessTime = calcTotalProcessTime(data[][2]);
 	int resultData[totalProcessTime];
 	int i = 0;
 	struct Queue q;
@@ -226,55 +224,120 @@ int* calcFCFS(int data[][2], int col) {
 	{
 		if (qSize(&q) == 0)
 			break;
-		resultData[i]=qPop();
+		resultData[i]=qPop(&q);
 		i++;
 	}
 	return resultData;
 }
+*/
 int* calcRR(int data[][2], int col, int timeQuantum) {
-	//sortProcess
-	int totalProcessTime=calcTotalProcessTime(data[][2]);
+	
+	//값이 온 순서대로 정렬 
+	int tempData[col][2];
+	int tempX, tempY;
+	for (int i = 0; i < col; i++) {
+		for (int j = 0; j < 2; j++) {
+			tempData[i][j] = data[i][j];
+		}
+	}
+	for(int j=col-1;j>0;j--){
+		for (int i = 0; i < col-1; i++) {
+			if (tempData[i][0] > tempData[i + 1][0]) {
+				tempX = tempData[i][0];
+				tempY = tempData[i][1];
+				tempData[i][0] = tempData[i + 1][0];
+				tempData[i][1] = tempData[i + 1][1];
+				tempData[i + 1][0] = tempX;
+				tempData[i + 1][1] = tempY;
+			}
+		}
+	}
+	for (int i = 0; i < col; i++) {
+		printf("{ %d,%d } \n", tempData[i][0], tempData[i][1]);
+	}
+	
+
+	int totalProcessTime=calcTotalProcessTime(tempData,col);
+	printf("총 실행시간  %d\n",totalProcessTime); 
 	int resultData[totalProcessTime];
 	int realTime=0;
 	int temp=-1;
+	int leftServiceTime=0;
 	struct Queue q;
 	qInit(&q, totalProcessTime);
 	int serviceData[col];
-	
+	int checkProcess[col];
 	for(int i=0;i<col;i++){
-		serviceData[i]=data[i][1];
+		serviceData[i]=tempData[i][1];
+		checkProcess[i]=0;
+	}
+	for(int i=0;i<col;i++){
+			leftServiceTime+=serviceData[i];
 	}//실행정보
-	
 	while(1){
-		for(int i=0;i<col;i++){
-			int totalProcessTime+=serviceData[i][1];
-		}
-		for(int i=0;i<col;i++){//도달한 프로세스면 시간만큼 넣어주세요.
-			if(realTime>=data[i][0]){
-				if(serviceData[i][1]==data[i][1]){
-					for(int j=0; j<serviceData[i];j++){
-						qPush(&q,i);
+		while(1){
+			
+			printf("현재시간 %d 초 \n",realTime); 
+			printf("남은시간 %d\n",leftServiceTime);
+			for(int i=0;i<col;i++){
+				if(realTime>=tempData[i][0] && checkProcess[i]==0){//도달한 프로세스면 시간만큼 넣어주세요. 도달했는데 이미 넣었던 친구들은 넣지마세요. 
+					if(serviceData[temp]!=qSize(&q) && qSize != 0 && temp !=-1){
+						while(temp==q.data[q.rear+1]) //내가 시간을 다썼는데 다른 친구가 왔다면 pop.
+							qPush(&q,qPop(&q));
 					}
+					for(int j=0; j<serviceData[i];j++){
+						qPush(&q,i); printf("큐에 %d 넣는중 \n",i );
+					}
+					if(qSize != 0 && temp !=-1){
+						while(temp==q.data[q.rear+1]) //내가 시간을 다썼는데 다른 친구가 왔다면 pop.
+							qPush(&q,qPop(&q));
+					//	while(1){
+					//		if(serviceData[temp]!=tempData[temp][0]){//실행됬었다면, 
+					//			while(temp==q.data[q.rear+1]){
+					//				qPush(&q,qPop(&q)); 
+					//				qPrint(&q); 
+					//			}
+					//				printf("%d 를 뒤로 보내는 중, 앞에 와야하는건 %d \n",temp,i);
+					//		}
+					//		temp=q.data[q.rear+1]; 	printf("%d가 현재 temp\n",temp);
+					//		if(temp==i)
+					//			break;
+					//		}
+					}	
+					checkProcess[i]=1;
 				}
 			}
+			printf("--------------------------------------------------------------------\n");
+			qPrint(&q); 
+			for(int i=0; i<timeQuantum;i++){// 주어진 시간만큼 실행
+				leftServiceTime--;
+				temp=qPop(&q);										printf("%d 팝\n",temp); 
+				resultData[realTime]=temp;							
+				serviceData[temp]--;
+				realTime++;								printf("%d 번 프로세스가 남은 시간 : %d\n 다음 작업 : %d\n",temp,serviceData[temp],q.data[q.rear+1]);
+				if(temp!=q.data[q.rear+1]){//다음 원소가 내가 아니면 끝난거니 빠져나오세요.							
+					break;
+				}
+			}
+			
+			printf("--------------------------------------------------------------------\n");
+			if(serviceData[temp]==qSize(&q)){
+				break;														
+			} // 1) 내가 실행하던 프로세스의 남은시간과 q의 사이즈가 같다면 나밖에 없다. 동시에 내 realtime이 누군가 들어오는 시간이 아니다. 나밖에 없으면 올라가서 누가 왔는지 보자. 	
+			if(temp==q.data[q.rear+1]){//아직 못끝낸 작업이있음?
+				while(temp==q.data[q.rear+1])
+					qPush(&q,qPop(&q));
+				printf("작업큐\n"); 
+			}
+			
+			
 		}
-		for(int i=0; i<timeQuantum;i++){// 주어진 시간만큼 실행
-			realTime++;
-			resultData[realTime]=temp=qPop(&q);
-			serviceData[temp]--;
-			if(temp!=q.data[q.rear+1])
-				break;
-		}
-		
-		if(temp==q.data[q.rear+1]){//아직 못끝낸 작업이있을?
-			while(temp==q.data[q.rear+1])
-				qPush(&q,qPop(&q));
-		}
-		
-			if(totalProcessTime==0)
-				break;
-	}
-	
+		if(leftServiceTime==0)
+				break;	
+	}	
+	for(int i=0;i<totalProcessTime;i++){
+			printf("%d. ", resultData[i]);
+	}	
 	return resultData;
 }
 /*whileile(1){
