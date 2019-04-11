@@ -67,8 +67,8 @@ void qPush(struct Queue *q, int param) {
 
 int qPop(struct Queue *q) {
 	if (q->front == q->rear) {
-		printf("Warning! Empty queue exception! return 0.\n");
-		return 0;
+		printf("Warning! Empty queue exception! return -1.\n");
+		return -1;
 	}
 
 	//printf("qPop front: %d\n",q->front);
@@ -85,6 +85,14 @@ void qPrint(struct Queue *q) {
 	for (int i = q->rear + 1; i <= q->front; i++)
 		printf("%d ", q->data[i]);
 	printf("]\n");
+}
+
+int calcTotalProcessTime(int data[][2]) {
+	int result=0;
+	for (int i=0; i < 3; i++) {
+		result += data[i][1];
+	}
+	return result;
 }
 
 int main(int argc, char *argv[]){
@@ -107,8 +115,9 @@ int main(int argc, char *argv[]){
 	printf("%d\n", qPop(&q));*/
 
 	// input ---> int arr[][2] = {{1,2},{{process arrival time},{service time}}}
-	int testData[3][2] = {{0, 5}, {2, 3}, {4, 4}};
-	calcMLFQ(testData, 3, 1);
+	int testData[3][2] = { {2, 3} ,{0, 5},  {4, 4}};
+	int i[3][2]=sortProcess(testData,3);
+	//calcMLFQ(testData, 3, 1);
 	
 	return 0;
 }
@@ -171,4 +180,121 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum) {
 	}
 	return result;
 }
+
+int* sortProcess(int data[][2], int col) {
+	int tempData[3][2];
+	int tempX, tempY;
+	for (int i = 0; i < 3; i++) {
+		for (for j = 0; j < 2; j++) {
+			tempData[i][j] = data[i][j];
+		}
+	}
+	for(int j=3-1;j>0;j--){
+		for (int i = 0; i < 3; i++) {
+			if ((i + 1) != 3) {
+				if (tempData[i][0] > tempData[i + 1][0]) {
+					tempX = tempData[i][0];
+					tempY = tempData[i][1];
+					tempData[i][0] = tempData[i + 1][0];
+					tempData[i][1] = tempData[i + 1][1];
+					tempData[i + 1][0] = tempX;
+					tempData[i + 1][1] = tempX;
+				}
+			}
+		}
+	}
+	for (int i = 0; i < 3; i++) {
+		printf("{ %d,%d } \n", tempData[i][0], tempData[i][1]);
+	}
+
+	return tempData;
+}
+
+int* calcFCFS(int data[][2], int col) {
+	//sortProcess
+	int totalProcessTime = calcTotalProcessTime(int data[][2]);
+	int resultData[totalProcessTime];
+	int i = 0;
+	struct Queue q;
+	qInit(&q, totalProcessTime);
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < data[i][1]; j++) {
+			qPush(&q, i);
+		}
+	}
+	while (1)
+	{
+		if (qSize(&q) == 0)
+			break;
+		resultData[i]=qPop();
+		i++;
+	}
+	return resultData;
+}
+int* calcRR(int data[][2], int col, int timeQuantum) {
+	//sortProcess
+	int totalProcessTime=calcTotalProcessTime(data[][2]);
+	int resultData[totalProcessTime];
+	int realTime=0;
+	struct Queue q;
+	qInit(&q, totalProcessTime);
+	while(1){
+		for(int i=0;i<col;i++){
+			if(realTime<data[i][0])
+				break;
+			for(int j=0;j<timeQuantum;j++){
+				if(data[i][1]==0)
+					break;
+				qPush(&q, i);
+				data[i][1]--;
+				realTime++;
+			}	
+		}
+		if(calcTotalProcessTime(data[][2])==0)
+			break;
+	}
+	while(qSize(&q)!=0){
+		resultData[i]=qPop(&q);
+		i++;
+	}
+	return resultData;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

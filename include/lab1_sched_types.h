@@ -22,7 +22,7 @@ int* calcFCFS(int data[][2], int col);
 int* calcRR(int data[][2], int col, int timeQuantum);
 int* calcMLFQ(int data[][2], int col, int timeQuantum);
 int* calcLottery(int data[][2], int col);
-
+int* sortProcess(int data[][2], int col);
 
 #endif /* LAB1_HEADER_H*/
 
