@@ -18,10 +18,10 @@
  * You need to Declare functions in  here
  */
 
-int* calcFCFS(int data[][2], int i, int j);
-int* calcRR(int data[][2], int i, int j);
-int* calcMLFQ(int data[][2], int i, int j);
-int* calcLottery(int data[][2], int i, int j);
+int* calcFCFS(int data[][2], int col);
+int* calcRR(int data[][2], int col, int timeQuantum);
+int* calcMLFQ(int data[][2], int col, int timeQuantum);
+int* calcLottery(int data[][2], int col);
 
 
 #endif /* LAB1_HEADER_H*/
