@@ -86,22 +86,11 @@ void qPrint(struct Queue *q) {
 }
 
 int main(int argc, char *argv[]){
-	int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
+	//int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
+	int testData[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
 	int mlfqResSize;
-	int *mlfq = calcMLFQ(testData, 5, 1, 3, &mlfqResSize);
-	printResult(testData, mlfq, 5, mlfqResSize);
-	
-	mlfq = calcMLFQ(testData, 5, 2, 3, &mlfqResSize);
-	printResult(testData, mlfq, 5, mlfqResSize);
-	
-	mlfq = calcMLFQ(testData, 5, 3, 3, &mlfqResSize);
-	printResult(testData, mlfq, 5, mlfqResSize);
-	
-	mlfq = calcMLFQ(testData, 5, 1, 2, &mlfqResSize);
-	printResult(testData, mlfq, 5, mlfqResSize);
-	
-	mlfq = calcMLFQ(testData, 5, 1, 4, &mlfqResSize);
-	printResult(testData, mlfq, 5, mlfqResSize);
+	int *mlfq = calcMLFQ(testData, 8, 1, 3, &mlfqResSize);
+	printResult(testData, mlfq, 8, mlfqResSize);
 	
 	return 0;
 }
@@ -152,16 +141,22 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 		//Add new process to highest priority queue when there is a process currently in procTime.
 		//If there are multiple processes arriving at the same time, a process with a smaller array index is added to the queue first. 
 		// Because the process is not named in the current simulator.
+		int pushCnt = -1;
 		for (int i = 0; i < col; i++)
 			if (data[i][0] == procTime) {
 				for (int j = 0; j < data[i][1]; j++)
 					qPush(&queueList[0], i);
-				//When a new process is scheduled, if there is a process that was previously running, drop it to the queue below.
-				if (i > firstArriveTime && qSize(&queueList[0]) > data[i][1])
-					while (qPeek(&queueList[0]) != i)
-						qPush(&queueList[1], qPop(&queueList[0]));
-				quantumTimer = timeQuantum;
+				if (pushCnt == -1)
+					pushCnt = i;
 			}
+		
+		//When a new process is scheduled, if there is a process that was previously running, drop it to the queue below.
+		if (pushCnt != -1) {
+			if (procTime > firstArriveTime && qSize(&queueList[0]) > data[pushCnt][1])
+				while (qPeek(&queueList[0]) != pushCnt)
+					qPush(&queueList[1], qPop(&queueList[0]));
+			quantumTimer = timeQuantum;
+		}
 		
 		//Execute process in the highest priority queue. 
 		for (int i = 0; i < queueSize; i++)
@@ -298,7 +293,10 @@ void printResult(int inputData[][2], int resData[], int col, int resSize) {
 	}
 	printf("(SUM)| ");
 	for (int i = 0; i < resSize; i++)
-		printf("%2c ", (char)(resData[i]+65));
+		if (resData[i] == -1)
+			printf(" - ");
+		else
+			printf("%2c ", (char)(resData[i]+65));
 	printf("\n");
 	printf("-------");
 	for (int i = 0; i < resSize; i++)
