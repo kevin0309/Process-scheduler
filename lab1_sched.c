@@ -1,8 +1,8 @@
 /*
 *	DKU Operating System Lab
 *	    Lab1 (Scheduler Algorithm Simulator)
-*	    Student id : 
-*	    Student name : 
+*	    Student id : 32141868
+*	    Student name : ¹ÚÀ¯Çö 
 *
 *   lab1_sched.c :
 *       - Lab1 source file.
@@ -86,30 +86,32 @@ void qPrint(struct Queue *q) {
 }
 
 int main(int argc, char *argv[]){
-	int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
+	//int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
+	int testData[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
 	int mlfqResSize;
-	int *mlfq = calcMLFQ(testData, 5, 1, &mlfqResSize);
-	printResult(testData, mlfq, 5, mlfqResSize);
-	
-	mlfq = calcMLFQ(testData, 5, 2, &mlfqResSize);
-	printResult(testData, mlfq, 5, mlfqResSize);
-	
-	mlfq = calcMLFQ(testData, 5, 3, &mlfqResSize);
-	printResult(testData, mlfq, 5, mlfqResSize);
+	int *mlfq = calcMLFQ(testData, 8, 1, 3, &mlfqResSize);
+	printResult(testData, mlfq, 8, mlfqResSize);
 	
 	return 0;
 }
 
-int* calcMLFQ(int data[][2], int col, int timeQuantum, int *resSize) {
-	if (col == 0) {
-		printf("calcMLFQ -> Empty data!!!\n");
-		int err[1] = {-1};
-		return err;
+int getLeftTime(int *leftTimeArr, int col) {
+	int totalLeftTime = 0;
+		for (int i = 0; i < col; i++)
+			totalLeftTime += leftTimeArr[i];
+	return totalLeftTime;
+}
+
+int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSize) {
+	if (col < 1 || queueSize < 2)
+		return NULL;
+	//Initialize queues for MLFQ.
+	struct Queue *queueList = malloc(sizeof(struct Queue) * queueSize);
+	for (int i = 0; i < queueSize; i++) {
+		struct Queue temp;
+		qInit(&temp, 100);
+		queueList[i] = temp;
 	}
-	//Initialize 3 queues for MLFQ.
-	struct Queue l1; qInit(&l1, 100);	//highest priority
-	struct Queue l2; qInit(&l2, 100);
-	struct Queue l3; qInit(&l3, 100);	//lowest priority
 	
 	//Analyze input data.
 	int lastArriveTime = 0; //last arrive time between processes
@@ -126,86 +128,83 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int *resSize) {
 	}
 	
 	//Set empty result data.
-	int *result = malloc(sizeof(int) * totalServiceTime);
-	for (int i = 0; i < totalServiceTime; i++)
+	//It is difficult to predict the gap between processes now, so allocate enough space.
+	int *result = malloc(sizeof(int) * totalServiceTime * 10);
+	for (int i = 0; i < totalServiceTime * 10; i++)
 		result[i] = -1;
 	
-	//Main process roof start.
+	//Main process roof start. Exit when all the processes are finished.
 	int procTime = 0; //CPU process timer
-	int curProc; //the process currently being processed by CPU
+	int curProc = -1; //the process currently being executed by CPU
 	int quantumTimer = timeQuantum; //time quantum counter
-	while (1) {
-		//Add new process to Queue1(highest priority) when there is a process currently in procTime.
-		//If there are multiple processes arriving at the same time, a process with a smaller array index is added to the queue. Because the process is not named in the current structure.
+	while (getLeftTime(leftServiceTimeArr, col) > 0) {
+		//Add new process to highest priority queue when there is a process currently in procTime.
+		//If there are multiple processes arriving at the same time, a process with a smaller array index is added to the queue first. 
+		// Because the process is not named in the current simulator.
+		int pushCnt = -1;
 		for (int i = 0; i < col; i++)
 			if (data[i][0] == procTime) {
 				for (int j = 0; j < data[i][1]; j++)
-					qPush(&l1, i);
-				//When a new process is inserted, if there is a process that was previously running, drop it to the queue below.
-				if (i > firstArriveTime && qSize(&l1) > data[i][1])
-					while (qPeek(&l1) != i)
-						qPush(&l2, qPop(&l1));
-				quantumTimer = timeQuantum;
+					qPush(&queueList[0], i);
+				if (pushCnt == -1)
+					pushCnt = i;
 			}
 		
+		//When a new process is scheduled, if there is a process that was previously running, drop it to the queue below.
+		if (pushCnt != -1) {
+			if (procTime > firstArriveTime && qSize(&queueList[0]) > data[pushCnt][1])
+				while (qPeek(&queueList[0]) != pushCnt)
+					qPush(&queueList[1], qPop(&queueList[0]));
+			quantumTimer = timeQuantum;
+		}
+		
 		//Execute process in the highest priority queue. 
-		if (qSize(&l1) > 0)
-			curProc = qPop(&l1);
-		else if (qSize(&l2) > 0)
-			curProc = qPop(&l2);
-		else
-			curProc = qPop(&l3);
+		for (int i = 0; i < queueSize; i++)
+			if (qSize(&queueList[i]) > 0) {
+				curProc = qPop(&queueList[i]);
+				break;
+			}
+			else
+				curProc = -1;
+		if (curProc == -1) { //Continue when there are no processes to execute.
+			procTime++;
+			continue;
+		}
 		result[procTime] = curProc; //Push to result.
 		leftServiceTimeArr[curProc]--;
 		
-		//When there are remaining jobs and there are no other processes scheduled in scheduler, drop it to the queue below.
+		//When there are remaining jobs and there are another processes scheduled in scheduler, drop it to the queue below.
 		int latestProc = result[procTime];
-		if (qSize(&l1) > 0) {
-			if (latestProc == qPeek(&l1))
-				quantumTimer--;
-			else
-				quantumTimer = timeQuantum;
-			if (quantumTimer <= 0 && qSize(&l1) + qSize(&l2) + qSize(&l3) != leftServiceTimeArr[latestProc]) {
-				for (int i = 0; i < leftServiceTimeArr[latestProc]; i++)
-					qPush(&l2, qPop(&l1));
-				quantumTimer = timeQuantum;
+		int totalQueueSize = 0;
+		for (int i = 0; i < queueSize; i++)
+			totalQueueSize += qSize(queueList+i);
+		for (int i = 0; i < queueSize; i++)
+			if (qSize(&queueList[i]) > 0) {
+				if (latestProc == qPeek(&queueList[i]))
+					quantumTimer--;
+				else
+					quantumTimer = timeQuantum;
+				if (quantumTimer <= 0 && totalQueueSize != leftServiceTimeArr[latestProc]) {
+					if (i != queueSize - 1)
+						for (int j = 0; j < leftServiceTimeArr[latestProc]; j++)
+							qPush(&queueList[i+1], qPop(&queueList[i]));
+					else
+						for (int j = 0; j < leftServiceTimeArr[latestProc]; j++)
+							qPush(&queueList[i], qPop(&queueList[i])); //Push to itself because there is no queue below.
+					quantumTimer = timeQuantum;
+				}
+				break;
 			}
-		}
-		else if (qSize(&l2) > 0) {
-			if (latestProc == qPeek(&l2))
-				quantumTimer--;
-			else
-				quantumTimer = timeQuantum;
-			if (quantumTimer <= 0 && qSize(&l1) + qSize(&l2) + qSize(&l3) != leftServiceTimeArr[latestProc]) {
-				for (int i = 0; i < leftServiceTimeArr[latestProc]; i++)
-					qPush(&l3, qPop(&l2));
-				quantumTimer = timeQuantum;
-			}
-		}
-		else { 
-			if (latestProc == qPeek(&l3))
-				quantumTimer--;
-			else
-				quantumTimer = timeQuantum;
-			if (quantumTimer <= 0) {
-				for (int i = 0; i < leftServiceTimeArr[latestProc]; i++)
-					qPush(&l3, qPop(&l3));	//Push to itself because there is no queue below.
-				quantumTimer = timeQuantum;
-			}
-		}
-		
+			
 		procTime++;
-		//Exit when procTime is appropriate or the queues are all empty
-		if (procTime > lastArriveTime && qSize(&l1) == 0 && qSize(&l2) == 0 && qSize(&l3) == 0)
-			break;
 	}
 	free(leftServiceTimeArr);
-	*resSize = totalServiceTime;
+	*resSize = procTime;
 	return result;
 }
 
 void printResult(int inputData[][2], int resData[], int col, int resSize) {
-	//Analyze result data.
+	//Analyze result data. (response time, turnaround time)
 	int firstProcessedTime[col];
 	int lastProcessedTime[col];
 	int responseTime[col];
@@ -294,7 +293,10 @@ void printResult(int inputData[][2], int resData[], int col, int resSize) {
 	}
 	printf("(SUM)| ");
 	for (int i = 0; i < resSize; i++)
-		printf("%2c ", (char)(resData[i]+65));
+		if (resData[i] == -1)
+			printf(" - ");
+		else
+			printf("%2c ", (char)(resData[i]+65));
 	printf("\n");
 	printf("-------");
 	for (int i = 0; i < resSize; i++)
