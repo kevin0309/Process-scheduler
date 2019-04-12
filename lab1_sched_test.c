@@ -61,8 +61,6 @@ void qPush(struct Queue *q, int param) {
 		q->data = newArray;
 	}
 	q->data[++(q->front)] = param;
-	//printf("qPush front: %d\n",q->front);
-	//printf("qPush rear: %d\n",q->rear);
 }
 
 int qPop(struct Queue *q) {
@@ -70,9 +68,6 @@ int qPop(struct Queue *q) {
 		printf("Warning! Empty queue exception! return -1.\n");
 		return -1;
 	}
-
-	//printf("qPop front: %d\n",q->front);
-	//printf("qPop rear: %d\n",q->rear);
 	return q->data[++(q->rear)];
 }
 
@@ -98,11 +93,8 @@ int main(int argc, char *argv[]){
 	qPush(&q, 10);
 	qPush(&q, 20);
 	qPush(&q, 30);
-	qPush(&q, 40);
-	qPush(&q, 50);
-	qPush(&q, 60);
-	qPrint(&q);
-	printf("%d\n", qPop(&q));
+	qPrint(&q);*/
+	/*printf("%d\n", qPop(&q));
 	printf("%d\n", qPop(&q));
 	printf("%d\n", qPop(&q));
 	printf("%d\n", qPop(&q));
@@ -113,13 +105,13 @@ int main(int argc, char *argv[]){
 	// input ---> int arr[][2] = {{1,2},{{process arrival time},{service time}}}
 	int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
 	int mlfqResSize;
-	int *mlfq = calcMLFQ(testData, 5, 1, &mlfqResSize);
+	int *mlfq = calcMLFQ(testData, 5, 1, 3, &mlfqResSize);
 	printResult(testData, mlfq, 5, mlfqResSize);
 	
-	mlfq = calcMLFQ(testData, 5, 2, &mlfqResSize);
+	mlfq = calcMLFQ(testData, 5, 2, 3, &mlfqResSize);
 	printResult(testData, mlfq, 5, mlfqResSize);
 	
-	mlfq = calcMLFQ(testData, 5, 3, &mlfqResSize);
+	mlfq = calcMLFQ(testData, 5, 3, 3, &mlfqResSize);
 	printResult(testData, mlfq, 5, mlfqResSize);
 }
 
@@ -136,11 +128,17 @@ void printDev(int col, int leftServiceTimeArr[], struct Queue *l1, struct Queue 
 	printf("\n");
 }
 
-int* calcMLFQ(int data[][2], int col, int timeQuantum, int *resSize) {
+int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSize) {
 	if (col == 0) {
 		printf("calcMLFQ -> Empty data!!!\n");
 		int err[1] = {-1};
 		return err;
+	}
+	struct Queue *queueList = malloc(sizeof(struct Queue) * queueSize);
+	for (int i = 0; i < queueSize; i++) {
+		struct Queue temp;
+		qInit(&temp, 100);
+		queueList[0] = temp;
 	}
 	//Initialize 3 queues for MLFQ.
 	struct Queue l1; qInit(&l1, 100);	//highest priority
