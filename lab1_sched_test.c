@@ -95,26 +95,17 @@ int calcTotalProcessTime(int data[][2],int col) {
 }
 
 int main(int argc, char *argv[]){
-	// queue test
-	/*struct Queue q;
-	qInit(&q, 3);
-	qPush(&q, 10);
-	qPush(&q, 20);
-	qPush(&q, 30);
-	qPrint(&q);*/
-	/*printf("%d\n", qPop(&q));
-	printf("%d\n", qPop(&q));
-	printf("%d\n", qPop(&q));
-	printf("%d\n", qPop(&q));
-	printf("%d\n", qPop(&q));
-	printf("%d\n", qPop(&q));
-	printf("%d\n", qPop(&q));*/
-
 	// input ---> int arr[][2] = {{1,2},{{process arrival time},{service time}}}
 	int testData[5][2] = {{0,3},{2,6},{6,5},{8,2},{4,4}};
+	int testData4[5][2] = {{0,3},{2,6},{6,5},{8,2},{4,4}};
 	int testData2[3][2]={{0,6},{3,5},{7,2}};
-	//calcFCFS(testData,5);
-	calcRR(testData, 5, 1);
+	
+	int fcfsResSize;
+	int *fcfs= calcFCFS(testData4,5, &fcfsResSize);
+	printResult(testData4,fcfs,5,fcfsResSize);
+	int rrResSize;
+	int *rr= calcRR(testData, 5, 1, &rrResSize);
+	printResult(testData,rr,5,rrResSize);
 	//int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
 	//int mlfqResSize;
 	//int *mlfq = calcMLFQ(testData, 5, 1, 5, &mlfqResSize);
@@ -122,8 +113,8 @@ int main(int argc, char *argv[]){
 	
 	int testData3[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
 	int mlfqResSize;
-	int *mlfq = calcMLFQ(testData3, 8, 1, 3, &mlfqResSize);
-	printResult(testData3, mlfq, 8, mlfqResSize);
+//	int *mlfq = calcMLFQ(testData3, 8, 1, 3, &mlfqResSize);
+//	printResult(testData3, mlfq, 8, mlfqResSize);
 	
 	//mlfq = calcMLFQ(testData, 5, 2, 3, &mlfqResSize);
 	//printResult(testData, mlfq, 5, mlfqResSize);
@@ -274,8 +265,7 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 	return result;
 }
 
-int* calcFCFS(int data[][2], int col) {
-	
+int* calcFCFS(int data[][2], int col,int *resSize) {
 	int tempData[col][2];
 	int tempX, tempY;
 	for (int i = 0; i < col; i++) {
@@ -295,12 +285,9 @@ int* calcFCFS(int data[][2], int col) {
 			}
 		}
 	}
-	for (int i = 0; i < col; i++) {
-		printf("{ %d,%d } \n", tempData[i][0], tempData[i][1]);
-	}
-	
 	int totalProcessTime=calcTotalProcessTime(tempData,col);
-	int resultData[totalProcessTime];
+	*resSize=totalProcessTime;
+	int *resultData = malloc(sizeof(int) * totalProcessTime);
 	int i = 0;
 	struct Queue q;
 	qInit(&q, totalProcessTime);
@@ -315,16 +302,11 @@ int* calcFCFS(int data[][2], int col) {
 			break;
 		resultData[i]=qPop(&q);
 		i++;
-	}
-	for(int i=0;i<totalProcessTime;i++){
-			printf("%d. ", resultData[i]);
 	}	
 	return resultData;
 }
 
-int* calcRR(int data[][2], int col, int timeQuantum) {
-	
-	//°ªÀÌ ¿Â ¼ø¼­´ë·Î Á¤·Ä 
+int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 	int tempData[col][2];
 	int tempX, tempY;
 	for (int i = 0; i < col; i++) {
@@ -343,15 +325,15 @@ int* calcRR(int data[][2], int col, int timeQuantum) {
 				tempData[i + 1][1] = tempY;
 			}
 		}
+	}	
+	for (int i = 0; i < col; i++) {
+		for (int j = 0; j < 2; j++) {
+			 data[i][j]= tempData[i][j];
+		}
 	}
-//	for (int i = 0; i < col; i++) {
-//		printf("{ %d,%d } \n", tempData[i][0], tempData[i][1]);
-//	}
-	
-
 	int totalProcessTime=calcTotalProcessTime(tempData,col);
-//	printf("ÃÑ ½ÇÇà½Ã°£  %d\n",totalProcessTime); 
-	int resultData[totalProcessTime];
+
+	int *resultData = malloc(sizeof(int) * totalProcessTime);
 	int realTime=0;
 	int temp=-1;
 	int leftServiceTime=0;
@@ -365,16 +347,14 @@ int* calcRR(int data[][2], int col, int timeQuantum) {
 	}
 	for(int i=0;i<col;i++){
 			leftServiceTime+=serviceData[i];
-	}//½ÇÇàÁ¤º¸
+	}
 	while(1){	
-//		printf("ÇöÀç½Ã°£ %d ÃÊ \n",realTime); 
-//		printf("³²Àº½Ã°£ %d\n",leftServiceTime);
 		for(int i=0;i<col;i++){
-			if(realTime>=tempData[i][0] && checkProcess[i]==0){//µµ´ÞÇÑ ÇÁ·Î¼¼½º¸é ½Ã°£¸¸Å­ ³Ö¾îÁÖ¼¼¿ä. µµ´ÞÇß´Âµ¥ ÀÌ¹Ì ³Ö¾ú´ø Ä£±¸µéÀº ³ÖÁö¸¶¼¼¿ä. 
+			if(realTime>=tempData[i][0] && checkProcess[i]==0){
 				for(int j=0; j<serviceData[i];j++){
-						qPush(&q,i); //printf("Å¥¿¡ %d ³Ö´ÂÁß \n",i );
+						qPush(&q,i);
 				}
-				if(temp==q.data[q.rear+1]){//ÀÛ¾÷ÀÌ ³²¾ÆÀÖ´Â 
+				if(temp==q.data[q.rear+1]){
 					for(int k=0; k<serviceData[temp];k++){
 						qPush(&q,qPop(&q));
 					}
@@ -382,41 +362,30 @@ int* calcRR(int data[][2], int col, int timeQuantum) {
 				checkProcess[i]=1;
 			}
 		}
-		if(temp==q.data[q.rear+1]){//ÀÛ¾÷ÀÌ ³²¾ÆÀÖ´Â 
+		if(temp==q.data[q.rear+1]){
 				for(int w=0; w<serviceData[temp];w++){
 				qPush(&q,qPop(&q));
 			}
 		}
-	//	printf("--------------------------------------------------------------------\n");
-	//	qPrint(&q); 
-		for(int i=0; i<timeQuantum;i++){// ÁÖ¾îÁø ½Ã°£¸¸Å­ ½ÇÇà
+
+		for(int i=0; i<timeQuantum;i++){
 			if(qSize(&q)==0)
 				break;
 			leftServiceTime--;
-			temp=qPop(&q);									//	printf("%d ÆË\n",temp); 
+			temp=qPop(&q);								
 			resultData[realTime]=temp;							
 			serviceData[temp]--;
-			realTime++;							//	printf("%d ¹ø ÇÁ·Î¼¼½º°¡ ³²Àº ½Ã°£ : %d\n ´ÙÀ½ ÀÛ¾÷ : %d\n",temp,serviceData[temp],q.data[q.rear+1]);
-			if(temp!=q.data[q.rear+1] ){//´ÙÀ½ ¿ø¼Ò°¡ ³»°¡ ¾Æ´Ï¸é ³¡³­°Å´Ï ºüÁ®³ª¿À¼¼¿ä.							
+			realTime++;						
+			if(temp!=q.data[q.rear+1] ){
 				break;
 			}
 		}
 		if(leftServiceTime==0)
 			break;
 	}
-//	for(int i=0;i<totalProcessTime;i++){
-//			printf("%d. ", resultData[i]);
-//	}	
+	*resSize=totalProcessTime;	
 	return resultData;
 }
-
-	//	else if(){
-		//		if(temp==q.data[q.rear+1]){//ÀÛ¾÷ÀÌ ³²¾ÆÀÖ´Â 
-		//			for(int w=0; w<serviceData[temp];w++){
-		//				qPush(&q,qPop(&q));
-		//			}
-		//		}	 
-		//	}
 
 void printResult(int inputData[][2], int resData[], int col, int resSize) {
 	//Analyze result data. (response time, turnaround time)
