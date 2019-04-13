@@ -94,23 +94,54 @@ int calcTotalProcessTime(int data[][2],int col) {
 	return result;
 }
 
+char getUserCommand() {
+	printf("Enter your command : ");
+	return getche();
+}
+
+int **getProcessData(int *size) {
+	while (1) {
+		printf("Choose how many process data to input.\nEnter your command : ");
+		int dataSize;
+		scanf("%d", &dataSize);
+		if (dataSize > 0) {
+			*size = dataSize;
+			int **result = malloc(sizeof(int*) * dataSize);
+			for (int i = 0; i < dataSize; i++) {
+				result[i] = malloc(sizeof(int) * 2);
+				printf("Process %c arrival : ", (char)(i+65));
+				scanf("%d", &result[i][0]);
+				printf("Process %c duration : ", (char)(i+65));
+				scanf("%d", &result[i][1]);
+				printf("\n");
+			}
+			return result;
+		}
+		else {
+			printf("Amount of process data must be greater than 0! Please try again.\n");
+		}
+	}
+	return NULL;
+}
+
 int main(int argc, char *argv[]){
 	// input ---> int arr[][2] = {{1,2},{{process arrival time},{service time}}}
-	int testData[5][2] = {{0,3},{2,6},{6,5},{8,2},{4,4}};
 	//int testData4[5][2] = {{0,3},{2,6},{6,5},{8,2},{4,4}};
 	//int testData2[3][2]={{0,6},{3,5},{7,2}};
 	
 	//int fcfsResSize;
 	//int *fcfs= calcFCFS(testData4,5, &fcfsResSize);
 	//printResult(testData4,fcfs,5,fcfsResSize);
-	int rrResSize;
-	int *rr= calcRR(testData, 5, 1, &rrResSize);
-	printResult(testData,rr,5,rrResSize);
 	
-	int testData2[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
-	int mlfqResSize;
-	int *mlfq = calcMLFQ(testData2, 5, 1, 3, &mlfqResSize);
-	printResult(testData2, mlfq, 5, mlfqResSize);
+	//int testData[5][2] = {{0,3},{2,6},{6,5},{8,2},{4,4}};
+	//int rrResSize;
+	//int *rr= calcRR(testData, 5, 1, &rrResSize);
+	//printResult(testData,rr,5,rrResSize);
+	
+	//int testData2[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
+	//int mlfqResSize;
+	//int *mlfq = calcMLFQ(testData2, 5, 1, 3, &mlfqResSize);
+	//printResult(testData2, mlfq, 5, mlfqResSize);
 	
 	/*int testData3[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
 	int mlfqResSize;
@@ -122,6 +153,328 @@ int main(int argc, char *argv[]){
 	
 	//mlfq = calcMLFQ(testData, 5, 3, 3, &mlfqResSize);
 	//printResult(testData, mlfq, 5, mlfqResSize);
+	
+	while(1) {
+		int roofEndFlag = 1;
+		printf("\n # Process-scheduler simulator\n\n");
+		printf(" 1. FCFS\n 2. RR\n 3. MLFQ\n 4. Lottery\n 5. Exit\n");
+		char command = getUserCommand();
+		printf("\n");
+		if (command == '1'){
+			while (roofEndFlag) {
+				printf("\n # FCFS\n\n   Option setup\n-----------------\n");
+				printf(" 1. Choose which input data to use.\n");
+				printf("   1. Type directly.\n   2. Use sample process data.\n");
+				int command2 = getUserCommand();
+				if (command2 == '1') {
+					printf("\n");
+					int procSize;
+					int **tempData = getProcessData(&procSize);
+					int testData[procSize][2];
+					for (int i = 0; i < procSize; i++) {
+						testData[i][0] = tempData[i][0];
+						testData[i][1] = tempData[i][1];
+					}
+					int fcfsResSize;
+					int *fcfs = calcFCFS(testData, procSize, &fcfsResSize);
+					printResult(testData, fcfs, procSize, fcfsResSize);
+					printf("Press any key to return to the main menu.");
+					getch();
+					roofEndFlag = 0;
+				}
+				else if (command2 == '2') {
+					printf("\n # FCFS\n\n   Option setup\n-----------------\n");
+					printf(" 2. Choose sample data.\n\n");
+					printf(" 1.       A  B  C  D  E\n");
+					printf("arrival   0  2  4  6  8\n");
+					printf("duration  3  6  4  5  2\n\n");
+					printf(" 2.       A  B  C  D  E  F  G  H\n");
+					printf("arrival   4  2  4  6  8 29 32 33\n");
+					printf("duration  8  6  4  5  2  8  1  6\n\n");
+					char command3 = getUserCommand();
+					
+					if (command3 == '1') {
+						int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
+						int fcfsResSize;
+						int *fcfs = calcFCFS(testData, 5, &fcfsResSize);
+						printResult(testData, fcfs, 5, fcfsResSize);
+						printf("Press any key to return to the main menu.");
+						getch();
+						roofEndFlag = 0;
+					}
+					else if (command3 == '2') {
+						int testData[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
+						int fcfsResSize;
+						int *fcfs = calcFCFS(testData, 8, &fcfsResSize);
+						printResult(testData, fcfs, 8, fcfsResSize);
+						printf("Press any key to return to the main menu.");
+						getch();
+						roofEndFlag = 0;
+					}
+					else {
+						printf("Invalid command! Please try again.\n");
+					}
+				}
+				else {
+					printf("Invalid command! Please try again.\n");
+				}
+			}
+		}
+		else if (command == '2') {
+			while (roofEndFlag) {
+				printf("\n # RR\n\n   Option setup\n-----------------\n");
+				printf("->1. time quantum\n");
+				printf("  2. input process data\n");
+				printf("-----------------\n");
+				printf(" 1. Choose how much time quantum to use. (1~)\n");
+				printf("Enter your command : ");
+				int timeQuantum;
+				scanf("%d", &timeQuantum);
+				if (timeQuantum > 0) {
+					while (roofEndFlag) {
+						printf("\n # RR\n\n   Option setup\n-----------------\n");
+						printf("  1. time quantum\n");
+						printf("->2. input process data\n");
+						printf("-----------------\n");
+						printf(" 2.1 Choose which input data to use.\n");
+						printf("   1. Type directly.\n   2. Use sample process data.\n");
+						int command2 = getUserCommand();
+						if (command2 == '1') {
+							printf("\n");
+							int procSize;
+							int **tempData = getProcessData(&procSize);
+							int testData[procSize][2];
+							for (int i = 0; i < procSize; i++) {
+								testData[i][0] = tempData[i][0];
+								testData[i][1] = tempData[i][1];
+							}
+							int rrResSize;
+							int *rr = calcRR(testData, procSize, timeQuantum, &rrResSize);
+							printResult(testData, rr, procSize, rrResSize);
+							printf("Press any key to return to the main menu.");
+							getch();
+							roofEndFlag = 0;
+						}
+						else if (command2 == '2') {
+							while (roofEndFlag) {
+								printf("\n # RR\n\n   Option setup\n-----------------\n");
+								printf("  1. time quantum\n");
+								printf("->2. input process data\n");
+								printf("-----------------\n");
+								printf(" 2.2 Choose sample data.\n\n");
+								printf(" 1.       A  B  C  D  E\n");
+								printf("arrival   0  2  4  6  8\n");
+								printf("duration  3  6  4  5  2\n\n");
+								printf(" 2.       A  B  C  D  E  F  G  H\n");
+								printf("arrival   4  2  4  6  8 29 32 33\n");
+								printf("duration  8  6  4  5  2  8  1  6\n\n");
+								char command3 = getUserCommand();
+								
+								if (command3 == '1') {
+									int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
+									int rrResSize;
+									int *rr = calcRR(testData, 5, timeQuantum, &rrResSize);
+									printResult(testData, rr, 5, rrResSize);
+									printf("Press any key to return to the main menu.");
+									getch();
+									roofEndFlag = 0;
+								}
+								else if (command3 == '2') {
+									int testData[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
+									int rrResSize;
+									int *rr = calcRR(testData, 8, timeQuantum, &rrResSize);
+									printResult(testData, rr, 8, rrResSize);
+									printf("Press any key to return to the main menu.");
+									getch();
+									roofEndFlag = 0;
+								}
+								else {
+									printf("Invalid command! Please try again.\n");
+								}
+							}
+						}
+						else {
+							printf("Invalid command! Please try again.\n");
+						}
+					}
+				}
+				else {
+					printf("Time quantum must be greater than 0! Please try again.\n");
+				}
+				break;
+			}
+		}
+		else if (command == '3') {
+			while (roofEndFlag) {
+				printf("\n # MLFQ\n\n   Option setup\n-----------------\n");
+				printf("->1. time quantum\n");
+				printf("  2. queue size\n");
+				printf("  3. input process data\n");
+				printf("-----------------\n");
+				printf(" 1. Choose how much time quantum to use. (1~)\n");
+				printf("Enter your command : ");
+				int timeQuantum;
+				scanf("%d", &timeQuantum);
+				if (timeQuantum > 0) {
+					while (roofEndFlag) {
+						printf("\n # MLFQ\n\n   Option setup\n-----------------\n");
+						printf("  1. time quantum\n");
+						printf("->2. queue size\n");
+						printf("  3. input process data\n");
+						printf("-----------------\n");
+						printf(" 2. Choose how much of the queue MLFQ will use. (2~)\n");
+						printf("Enter your command : ");
+						int queueSize;
+						scanf("%d", &queueSize);
+						if (queueSize > 1) {
+							while (roofEndFlag) {
+								printf("\n # MLFQ\n\n   Option setup\n-----------------\n");
+								printf("  1. time quantum\n");
+								printf("  2. queue size\n");
+								printf("->3. input process data\n");
+								printf("-----------------\n");
+								printf(" 3.1 Choose which input data to use.\n");
+								printf("   1. Type directly.\n   2. Use sample process data.\n");
+								int command2 = getUserCommand();
+								if (command2 == '1') {
+									printf("\n");
+									int procSize;
+									int **tempData = getProcessData(&procSize);
+									int testData[procSize][2];
+									for (int i = 0; i < procSize; i++) {
+										testData[i][0] = tempData[i][0];
+										testData[i][1] = tempData[i][1];
+									}
+									int mlfqResSize;
+									int *mlfq = calcMLFQ(testData, procSize, timeQuantum, queueSize, &mlfqResSize);
+									printResult(testData, mlfq, procSize, mlfqResSize);
+									printf("Press any key to return to the main menu.");
+									getch();
+									roofEndFlag = 0;
+								}
+								else if (command2 == '2') {
+									while (roofEndFlag) {
+										printf("\n # MLFQ\n\n   Option setup\n-----------------\n");
+										printf("  1. time quantum\n");
+										printf("  2. queue size\n");
+										printf("->3. input process data\n");
+										printf("-----------------\n");
+										printf(" 3.2 Choose sample data.\n\n");
+										printf(" 1.       A  B  C  D  E\n");
+										printf("arrival   0  2  4  6  8\n");
+										printf("duration  3  6  4  5  2\n\n");
+										printf(" 2.       A  B  C  D  E  F  G  H\n");
+										printf("arrival   4  2  4  6  8 29 32 33\n");
+										printf("duration  8  6  4  5  2  8  1  6\n\n");
+										char command3 = getUserCommand();
+										
+										if (command3 == '1') {
+											int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
+											int mlfqResSize;
+											int *mlfq = calcMLFQ(testData, 5, timeQuantum, queueSize, &mlfqResSize);
+											printResult(testData, mlfq, 5, mlfqResSize);
+											printf("Press any key to return to the main menu.");
+											getch();
+											roofEndFlag = 0;
+										}
+										else if (command3 == '2') {
+											int testData[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
+											int mlfqResSize;
+											int *mlfq = calcMLFQ(testData, 8, timeQuantum, queueSize, &mlfqResSize);
+											printResult(testData, mlfq, 8, mlfqResSize);
+											printf("Press any key to return to the main menu.");
+											getch();
+											roofEndFlag = 0;
+										}
+										else {
+											printf("Invalid command! Please try again.\n");
+										}
+									}
+								}
+								else {
+									printf("Invalid command! Please try again.\n");
+								}
+							}
+						}
+						else {
+							printf("Amount of queue must be greater than 1! Please try again.\n");
+						}
+					}
+				}
+				else {
+					printf("Time quantum must be greater than 0! Please try again.\n");
+				}
+				break;
+			}
+		}
+		else if (command == '4') {
+			while (roofEndFlag) {
+				printf("\n # Lottery\n\n   Option setup\n-----------------\n");
+				printf(" 1. Choose which input data to use.\n");
+				printf("   1. Type directly.\n   2. Use sample process data.\n");
+				int command2 = getUserCommand();
+				if (command2 == '1') {
+					printf("\n");
+					int procSize;
+					int **tempData = getProcessData(&procSize);
+					int testData[procSize][2];
+					for (int i = 0; i < procSize; i++) {
+						testData[i][0] = tempData[i][0];
+						testData[i][1] = tempData[i][1];
+					}
+					int lotteryResSize;
+					int *lottery = calcLottery(testData, procSize, &lotteryResSize);
+					printResult(testData, lottery, procSize, lotteryResSize);
+					printf("Press any key to return to the main menu.");
+					getch();
+					roofEndFlag = 0;
+				}
+				else if (command2 == '2') {
+					printf("\n # Lottery\n\n   Option setup\n-----------------\n");
+					printf(" 2. Choose sample data.\n\n");
+					printf(" 1.       A  B  C  D  E\n");
+					printf("arrival   0  2  4  6  8\n");
+					printf("duration  3  6  4  5  2\n\n");
+					printf(" 2.       A  B  C  D  E  F  G  H\n");
+					printf("arrival   4  2  4  6  8 29 32 33\n");
+					printf("duration  8  6  4  5  2  8  1  6\n\n");
+					char command3 = getUserCommand();
+					
+					if (command3 == '1') {
+						int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
+						int lotteryResSize;
+						int *lottery = calcLottery(testData, 5, &lotteryResSize);
+						printResult(testData, lottery, 5, lotteryResSize);
+						printf("Press any key to return to the main menu.");
+						getch();
+						roofEndFlag = 0;
+					}
+					else if (command3 == '2') {
+						int testData[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
+						int lotteryResSize;
+						int *lottery = calcLottery(testData, 8, &lotteryResSize);
+						printResult(testData, lottery, 8, lotteryResSize);
+						printf("Press any key to return to the main menu.");
+						getch();
+						roofEndFlag = 0;
+					}
+					else {
+						printf("Invalid command! Please try again.\n");
+					}
+				}
+				else {
+					printf("Invalid command! Please try again.\n");
+				}
+			}
+		}
+		else if (command == '5') {
+			break;
+		}
+		else {
+			printf("Invalid command! Please try again.\n");
+		}
+		roofEndFlag = 1;
+	}
 }
 
 void printDev(int col, int leftServiceTimeArr[], struct Queue *queueList, int queueSize, int procTime, int result[]) {
@@ -384,6 +737,8 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 	*resSize=totalProcessTime;	
 	return resultData;
 }
+
+int* calcLottery(int data[][2], int col, int *resSize) {return NULL;}
 
 void printResult(int inputData[][2], int resData[], int col, int resSize) {
 	//Analyze result data. (response time, turnaround time)
