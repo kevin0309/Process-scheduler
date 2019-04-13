@@ -116,8 +116,8 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 	//Analyze input data.
 	int lastArriveTime = 0; //last arrive time between processes
 	int firstArriveTime = data[0][0]; //first arrive time between processes
-	int totalServiceTime = 0; //total process service time from first process arrival	
-	int *leftServiceTimeArr = malloc(sizeof(int) * col); //remaining service time temporary storage of processes
+	int totalServiceTime = 0; //minimum total process service time from first process arrival	
+	int *leftServiceTimeArr = malloc(sizeof(int) * col); //remaining service time temporary storage for each process
 	for (int i = 0; i < col; i++) {
 		if (data[i][0] > lastArriveTime)
 			lastArriveTime = data[i][0];
@@ -135,7 +135,7 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 	
 	//Main process roof start. Exit when all the processes are finished.
 	int procTime = 0; //CPU process timer
-	int curProc = -1; //the process currently being executed by CPU
+	int curProc; //the process currently being executed by CPU
 	int quantumTimer = timeQuantum; //time quantum counter
 	while (getLeftTime(leftServiceTimeArr, col) > 0) {
 		//Add new process to highest priority queue when there is a process currently in procTime.
@@ -152,7 +152,7 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 		
 		//When a new process is scheduled, if there is a process that was previously running, drop it to the queue below.
 		if (pushCnt != -1) {
-			if (procTime > firstArriveTime && qSize(&queueList[0]) > data[pushCnt][1])
+			if (qSize(&queueList[0]) > data[pushCnt][1])
 				while (qPeek(&queueList[0]) != pushCnt)
 					qPush(&queueList[1], qPop(&queueList[0]));
 			quantumTimer = timeQuantum;
@@ -174,31 +174,27 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 		leftServiceTimeArr[curProc]--;
 		
 		//When there are remaining jobs and there are another processes scheduled in scheduler, drop it to the queue below.
-		int latestProc = result[procTime];
 		int totalQueueSize = 0;
 		for (int i = 0; i < queueSize; i++)
 			totalQueueSize += qSize(queueList+i);
 		for (int i = 0; i < queueSize; i++)
 			if (qSize(&queueList[i]) > 0) {
-				if (latestProc == qPeek(&queueList[i]))
+				if (curProc == qPeek(&queueList[i]))
 					quantumTimer--;
 				else
 					quantumTimer = timeQuantum;
-				if (quantumTimer <= 0 && totalQueueSize != leftServiceTimeArr[latestProc]) {
-					if (i != queueSize - 1)
-						for (int j = 0; j < leftServiceTimeArr[latestProc]; j++)
+				if (quantumTimer <= 0 && totalQueueSize != leftServiceTimeArr[curProc]) {
+					for (int j = 0; j < leftServiceTimeArr[curProc]; j++)
+						if (i != queueSize - 1)
 							qPush(&queueList[i+1], qPop(&queueList[i]));
-					else
-						for (int j = 0; j < leftServiceTimeArr[latestProc]; j++)
-							qPush(&queueList[i], qPop(&queueList[i])); //Push to itself because there is no queue below.
+						else //Push to itself because there is no queue below.
+							qPush(&queueList[i], qPop(&queueList[i]));
 					quantumTimer = timeQuantum;
 				}
 				break;
 			}
-			
 		procTime++;
 	}
-	free(leftServiceTimeArr);
 	*resSize = procTime;
 	return result;
 }
