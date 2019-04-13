@@ -188,9 +188,9 @@ int main(int argc, char *argv[]){
 					printf(" 1.       A  B  C  D  E\n");
 					printf("arrival   0  2  4  6  8\n");
 					printf("duration  3  6  4  5  2\n\n");
-					printf(" 2.       A  B  C  D  E  F  G  H\n");
-					printf("arrival   4  2  4  6  8 29 32 33\n");
-					printf("duration  8  6  4  5  2  8  1  6\n\n");
+					printf(" 2.       A  B  C\n");
+					printf("arrival   0  1  2\n");
+					printf("duration 15  1  1\n\n");
 					char command3 = getUserCommand();
 					
 					if (command3 == '1') {
@@ -203,10 +203,10 @@ int main(int argc, char *argv[]){
 						roofEndFlag = 0;
 					}
 					else if (command3 == '2') {
-						int testData[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
+						int testData[3][2] = {{0, 15}, {1, 1}, {2, 1}};
 						int fcfsResSize;
-						int *fcfs = calcFCFS(testData, 8, &fcfsResSize);
-						printResult(testData, fcfs, 8, fcfsResSize);
+						int *fcfs = calcFCFS(testData, 3, &fcfsResSize);
+						printResult(testData, fcfs, 3, fcfsResSize);
 						printf("Press any key to return to the main menu.");
 						getch();
 						roofEndFlag = 0;
@@ -266,8 +266,8 @@ int main(int argc, char *argv[]){
 								printf("arrival   0  2  4  6  8\n");
 								printf("duration  3  6  4  5  2\n\n");
 								printf(" 2.       A  B  C  D  E  F  G  H\n");
-								printf("arrival   4  2  4  6  8 29 32 33\n");
-								printf("duration  8  6  4  5  2  8  1  6\n\n");
+								printf("arrival   0  2  4  6  8 10 12 14\n");
+								printf("duration  4  4  4  4  4  4  4  4\n\n");
 								char command3 = getUserCommand();
 								
 								if (command3 == '1') {
@@ -280,7 +280,7 @@ int main(int argc, char *argv[]){
 									roofEndFlag = 0;
 								}
 								else if (command3 == '2') {
-									int testData[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
+									int testData[8][2] = {{0, 4}, {2, 4}, {4, 4}, {6, 4}, {8, 4}, {10, 4}, {12, 4}, {14, 4}};
 									int rrResSize;
 									int *rr = calcRR(testData, 8, timeQuantum, &rrResSize);
 									printResult(testData, rr, 8, rrResSize);
@@ -435,9 +435,9 @@ int main(int argc, char *argv[]){
 					printf(" 1.       A  B  C  D  E\n");
 					printf("arrival   0  2  4  6  8\n");
 					printf("duration  3  6  4  5  2\n\n");
-					printf(" 2.       A  B  C  D  E  F  G  H\n");
-					printf("arrival   4  2  4  6  8 29 32 33\n");
-					printf("duration  8  6  4  5  2  8  1  6\n\n");
+					printf(" 2.       A  B  C  D  E  F\n");
+					printf("arrival   0  0  0  0  0  0\n");
+					printf("duration  5  5  5  5  5  5\n\n");
 					char command3 = getUserCommand();
 					
 					if (command3 == '1') {
@@ -450,10 +450,10 @@ int main(int argc, char *argv[]){
 						roofEndFlag = 0;
 					}
 					else if (command3 == '2') {
-						int testData[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
+						int testData[6][2] = {{0, 5}, {0, 5}, {0, 5}, {0, 5}, {0, 5}, {0, 5}};
 						int lotteryResSize;
-						int *lottery = calcLottery(testData, 8, &lotteryResSize);
-						printResult(testData, lottery, 8, lotteryResSize);
+						int *lottery = calcLottery(testData, 6, &lotteryResSize);
+						printResult(testData, lottery, 6, lotteryResSize);
 						printf("Press any key to return to the main menu.");
 						getch();
 						roofEndFlag = 0;
@@ -738,7 +738,65 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 	return resultData;
 }
 
-int* calcLottery(int data[][2], int col, int *resSize) {return NULL;}
+int* calcLottery(int data[][2], int col, int *resSize) {
+	if (col < 1)
+		return NULL;
+	
+	//Analyze input data.
+	int totalServiceTime = 0; //minimum total process service time from first process arrival	
+	int *leftServiceTimeArr = malloc(sizeof(int) * col); //remaining service time temporary storage for each process
+	int *ticketArr = malloc(sizeof(int) * col); //remaining service time temporary storage for each process
+	for (int i = 0; i < col; i++) {
+		totalServiceTime += data[i][1];
+		leftServiceTimeArr[i] = data[i][1];
+		ticketArr[i] = 0;
+	}
+	
+	//Set empty result data.
+	//It is difficult to predict the gap between processes now, so allocate enough space.
+	int *result = malloc(sizeof(int) * totalServiceTime * 10);
+	for (int i = 0; i < totalServiceTime * 10; i++)
+		result[i] = -1;
+	
+	//Main process roof start. Exit when all the processes are finished.
+	int procTime = 0; //CPU process timer
+	int curProc; //the process currently being executed by CPU
+	while (getLeftTime(leftServiceTimeArr, col) > 0) {
+		//Add new process when there is a process currently in procTime.
+		int pushCnt = -1;
+		for (int i = 0; i < col; i++)
+			if (data[i][0] == procTime) {
+				for (int j = 0; j < data[i][1]; j++)
+					ticketArr[i] = data[i][1];
+				if (pushCnt == -1)
+					pushCnt = i;
+			}
+			
+		//Executes a process that randomly picks one of the tickets.
+		int ticketAmount = 0;
+		for (int i = 0; i < col; i++)
+			ticketAmount += ticketArr[i];
+		if (ticketAmount > 0) {
+			int r = rand() % ticketAmount;
+			for (int i = 0; i < col; i++)
+				if (r >= ticketArr[i])
+					r -= ticketArr[i];
+				else {
+					curProc = i;
+					break;
+				}
+			result[procTime] = curProc; //Push to result.
+			leftServiceTimeArr[curProc]--;
+			
+			for (int i = 0; i < col; i++)
+				if (leftServiceTimeArr[i] == 0)
+					ticketArr[i] = 0;
+		}
+		procTime++;
+	}
+	*resSize = procTime;
+	return result;
+}
 
 void printResult(int inputData[][2], int resData[], int col, int resSize) {
 	//Analyze result data. (response time, turnaround time)
