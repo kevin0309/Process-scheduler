@@ -2,7 +2,7 @@
 *	DKU Operating System Lab
 *	    Lab1 (Scheduler Algorithm Simulator)
 *	    Student id : 32141868
-*	    Student name : ¹ÚÀ¯Çö 
+*	    Student name : Â¹ÃšÃ€Â¯Ã‡Ã¶ 
 *
 *   lab1_sched.c :
 *       - Lab1 source file.
@@ -125,24 +125,6 @@ int **getProcessData(int *size) {
 }
 
 int main(int argc, char *argv[]){
-	// input ---> int arr[][2] = {{1,2},{{process arrival time},{service time}}}
-	//int testData4[5][2] = {{0,3},{2,6},{6,5},{8,2},{4,4}};
-	//int testData2[3][2]={{0,6},{3,5},{7,2}};
-	
-	//int fcfsResSize;
-	//int *fcfs= calcFCFS(testData4,5, &fcfsResSize);
-	//printResult(testData4,fcfs,5,fcfsResSize);
-	
-	//int testData[5][2] = {{0,3},{2,6},{6,5},{8,2},{4,4}};
-	//int rrResSize;
-	//int *rr= calcRR(testData, 5, 1, &rrResSize);
-	//printResult(testData,rr,5,rrResSize);
-	
-	//int testData2[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
-	//int mlfqResSize;
-	//int *mlfq = calcMLFQ(testData2, 5, 1, 3, &mlfqResSize);
-	//printResult(testData2, mlfq, 5, mlfqResSize);
-	
 	/*int testData3[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
 	int mlfqResSize;
 	int *mlfq = calcMLFQ(testData3, 8, 1, 1, &mlfqResSize);
@@ -636,25 +618,50 @@ int* calcFCFS(int data[][2], int col,int *resSize) {
 			}
 		}
 	}
-	int totalProcessTime=calcTotalProcessTime(tempData,col);
-	*resSize=totalProcessTime;
-	int *resultData = malloc(sizeof(int) * totalProcessTime);
-	int i = 0;
-	struct Queue q;
-	qInit(&q, totalProcessTime);
 	for (int i = 0; i < col; i++) {
-		for (int j = 0; j < tempData[i][1]; j++) {
-			qPush(&q, i);
+		for (int j = 0; j < 2; j++) {
+			 data[i][j]= tempData[i][j];
 		}
 	}
-	while (1)
-	{
-		if (qSize(&q) == 0)
+	int realTime=0;
+	int totalProcessTime=calcTotalProcessTime(tempData,col);
+	int leftProcessTime=totalProcessTime;
+	int *resultData = malloc(sizeof(int) * totalProcessTime * 10);
+	int serviceData[col];
+	int checkProcess[col];
+	struct Queue q;
+	int tempQSize=0;
+	int index=0;
+	qInit(&q, totalProcessTime+100);
+	for(int i=0;i<col;i++){
+		serviceData[i]=tempData[i][1];
+		checkProcess[i]=0;
+	}
+	printf("%d %d",qSize(&q),leftProcessTime);
+	while(1){
+		tempQSize=qSize(&q);
+		for(int i=0;i<col;i++){
+			if(realTime>=tempData[i][0] && checkProcess[i]==0){
+				for(int j=0;j<serviceData[i];j++){
+					qPush(&q,i);
+					realTime++;
+					leftProcessTime--;
+				}
+				checkProcess[i]=1;
+			}
+		}
+		if(qSize(&q)==tempQSize){
+			qPush(&q,-1);
+			realTime++;
+			totalProcessTime++;
+		}
+		if(leftProcessTime==0)
 			break;
-		resultData[i]=qPop(&q);
-		i++;
-	}	
-	return resultData;
+	}
+	
+	printf("%d",totalProcessTime);
+	*resSize=totalProcessTime;
+	return q.data;
 }
 
 int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
@@ -683,10 +690,10 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 		}
 	}
 	int totalProcessTime=calcTotalProcessTime(tempData,col);
-
-	int *resultData = malloc(sizeof(int) * totalProcessTime);
+	int *resultData = malloc(sizeof(int) * totalProcessTime * 100);
 	int realTime=0;
 	int temp=-1;
+	int emptyCounter=0;
 	int leftServiceTime=0;
 	struct Queue q;
 	qInit(&q, totalProcessTime);
@@ -718,7 +725,6 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 				qPush(&q,qPop(&q));
 			}
 		}
-
 		for(int i=0; i<timeQuantum;i++){
 			if(qSize(&q)==0)
 				break;
@@ -731,6 +737,17 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 				break;
 			}
 		}
+		if(qSize(&q)==0){
+			emptyCounter++;
+			if(emptyCounter==3){
+				resultData[realTime]=-1;
+				realTime++;
+				totalProcessTime++;
+				emptyCounter=0;
+			}
+		}
+		else
+			emptyCounter=0;
 		if(leftServiceTime==0)
 			break;
 	}
