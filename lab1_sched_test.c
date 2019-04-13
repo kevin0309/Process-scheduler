@@ -99,17 +99,20 @@ int main(int argc, char *argv[]){
 	int testData[5][2] = {{0,3},{2,6},{6,5},{8,2},{4,4}};
 	int testData4[5][2] = {{0,3},{2,6},{6,5},{8,2},{4,4}};
 	int testData2[3][2]={{0,6},{3,5},{7,2}};
+	int testData5[8][2]={{2, 8}, {4, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
 	
 	int fcfsResSize;
 	int *fcfs= calcFCFS(testData4,5, &fcfsResSize);
-	printResult(testData4,fcfs,5,fcfsResSize);
+//	printResult(testData4,fcfs,5,fcfsResSize);
 	int rrResSize;
-	int *rr= calcRR(testData, 5, 1, &rrResSize);
-	printResult(testData,rr,5,rrResSize);
+//	int *rr= calcRR(testData5, 8, 1, &rrResSize);
+//	printResult(testData5, rr,8,rrResSize);
 	//int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
 	//int mlfqResSize;
 	//int *mlfq = calcMLFQ(testData, 5, 1, 5, &mlfqResSize);
 	//printResult(testData, mlfq, 5, mlfqResSize);
+	int lotterySize;
+	int *lottery= calcLottery(testData,5,&lotterySize);
 	
 	int testData3[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
 	int mlfqResSize;
@@ -331,11 +334,15 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 			 data[i][j]= tempData[i][j];
 		}
 	}
+	for(int i=0; i < col; i++){
+		printf("%d %d, ",tempData[i][0],tempData[i][1]);
+	}
 	int totalProcessTime=calcTotalProcessTime(tempData,col);
-
-	int *resultData = malloc(sizeof(int) * totalProcessTime);
+	printf("%d",totalProcessTime);
+	int *resultData = malloc(sizeof(int) * totalProcessTime * 100);
 	int realTime=0;
 	int temp=-1;
+	int emptyCounter=0;
 	int leftServiceTime=0;
 	struct Queue q;
 	qInit(&q, totalProcessTime);
@@ -367,7 +374,7 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 				qPush(&q,qPop(&q));
 			}
 		}
-
+		qPrint(&q);
 		for(int i=0; i<timeQuantum;i++){
 			if(qSize(&q)==0)
 				break;
@@ -380,10 +387,69 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 				break;
 			}
 		}
+		if(qSize(&q)==0){
+			emptyCounter++;
+			if(emptyCounter==3){
+				resultData[realTime]=-1;
+				realTime++;
+				totalProcessTime++;
+				emptyCounter=0;
+			}
+		}
+		else
+			emptyCounter=0;
 		if(leftServiceTime==0)
 			break;
 	}
 	*resSize=totalProcessTime;	
+	return resultData;
+}
+
+int* calcLottery(int data[][2], int col, int *resSize){
+	int totalProcessTime=calcTotalProcessTime(data,col);
+	*resSize=totalProcessTime;
+	int lottery[totalProcessTime]; //number of lottery;
+	int *resultData = malloc(sizeof(int) * totalProcessTime);
+	int leftServiceTime=totalProcessTime;
+	int serviceTime[col];
+	int index=0;
+	int realTime=0;
+	int checkProcess[col];
+	for(int i=0; i<totalProcessTime;i++){
+		lottery[i]=-1;  //initialization
+	}
+	for(int i=0; i<col;i++){
+		int checkProcess[i]; //initialization
+		serviceTime[i]=data[i][1];
+	}
+	while(1){
+		for(int i=0;i<col;i++){
+			if(checkProcess[i]==0 && data[i][0]>=realTime){
+				checkProcess[i]=1;
+				for(int j=0;j<col;j++){
+					lottery[index]=i;
+					index++;
+				}
+			}
+		}
+		srand(time(NULL));
+		int pickLottery=rand()%totalProcessTime;
+		//printf("%d \n",pickLottery);
+		if(lottery[pickLottery]!=-1 && serviceTime[lottery[pickLottery]]!=0){//값이있을 때 
+			resultData[realTime]=lottery[pickLottery];
+			serviceTime[lottery[pickLottery]]--;
+			leftServiceTime--;
+			realTime++; 
+			printf("현재시간 : %d\n",realTime);
+		}
+		if(leftServiceTime==0)
+			break;
+	}
+	printf("[");
+	for(int i;i<totalProcessTime;i++){
+			printf("%d ",resultData[i]);
+	}
+	printf("]");
 	return resultData;
 }
 
