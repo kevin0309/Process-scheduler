@@ -125,17 +125,6 @@ int **getProcessData(int *size) {
 }
 
 int main(int argc, char *argv[]){
-	/*int testData3[8][2] = {{4, 8}, {2, 6}, {4, 4}, {6, 5}, {8, 2}, {29, 8}, {32, 1}, {33, 6}};
-	int mlfqResSize;
-	int *mlfq = calcMLFQ(testData3, 8, 1, 1, &mlfqResSize);
-	printResult(testData3, mlfq, 8, mlfqResSize);*/
-	
-	//mlfq = calcMLFQ(testData, 5, 2, 3, &mlfqResSize);
-	//printResult(testData, mlfq, 5, mlfqResSize);
-	
-	//mlfq = calcMLFQ(testData, 5, 3, 3, &mlfqResSize);
-	//printResult(testData, mlfq, 5, mlfqResSize);
-	
 	while(1) {
 		int roofEndFlag = 1;
 		printf("\n # Process-scheduler simulator\n\n");
