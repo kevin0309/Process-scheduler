@@ -2,7 +2,7 @@
 *	DKU Operating System Lab
 *	    Lab1 (Scheduler Algorithm Simulator)
 *	    Student id : 32141868, 32144697
-*	    Student name : ¹ÚÀ¯Çö, ÃÖ±¤Áø 
+*	    Student name : Â¹ÃšÃ€Â¯Ã‡Ã¶, ÃƒÃ–Â±Â¤ÃÃ¸ 
 *
 *   lab1_sched.c :
 *       - Lab1 source file.
@@ -607,12 +607,13 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 			}
 		
 		//When a new process is scheduled, if there is a process that was previously running, drop it to the queue below.
-		if (pushCnt != -1) {
-			if (qSize(&queueList[0]) > data[pushCnt][1])
-				while (qPeek(&queueList[0]) != pushCnt)
+		if (pushCnt != -1)
+			if (qSize(&queueList[0]) > data[pushCnt][1]) {
+				int latestProc = result[procTime-1];
+				while (qPeek(&queueList[0]) == latestProc && pushCnt != latestProc)
 					qPush(&queueList[1], qPop(&queueList[0]));
-			quantumTimer = timeQuantum;
-		}
+				quantumTimer = timeQuantum;
+			}
 		
 		//Execute process in the highest priority queue. 
 		for (int i = 0; i < queueSize; i++)
