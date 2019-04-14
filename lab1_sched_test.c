@@ -1,8 +1,8 @@
 /*
 *	DKU Operating System Lab
 *	    Lab1 (Scheduler Algorithm Simulator)
-*	    Student id : 32141868
-*	    Student name : Ã‚Â¹ÃƒÅ¡Ãƒâ‚¬Ã‚Â¯Ãƒâ€¡ÃƒÂ¶ 
+*	    Student id : 32141868, 32144697
+*	    Student name : ¹ÚÀ¯Çö, ÃÖ±¤Áø 
 *
 *   lab1_sched.c :
 *       - Lab1 source file.
@@ -28,11 +28,6 @@
 
 #include "include/lab1_sched_types.h"
 
-/*
- * you need to implement scheduler simlator test code.
- *
- */
-
 // Queue implementation
 struct Queue {
 	int max, front, rear;
@@ -54,9 +49,8 @@ void qPush(struct Queue *q, int param) {
 		//double max
 		q->max *= 2;
 		int *newArray = malloc(sizeof(int) * q->max);
-		for (int i = 0; i < q->max/2; i++) {
+		for (int i = 0; i < q->max/2; i++)
 			newArray[i] = q->data[i];
-		}
 		free(q->data);
 		q->data = newArray;
 	}
@@ -88,15 +82,16 @@ void qPrint(struct Queue *q) {
 
 int calcTotalProcessTime(int data[][2],int col) {
 	int result=0;
-	for (int i=0; i < col; i++) {
+	for (int i=0; i < col; i++)
 		result = result + data[i][1];
-	}
 	return result;
 }
 
 char getUserCommand() {
+	char res;
 	printf("Enter your command : ");
-	return getche();
+	scanf("%c", &res); getchar();
+	return res;
 }
 
 int **getProcessData(int *size) {
@@ -110,20 +105,30 @@ int **getProcessData(int *size) {
 			for (int i = 0; i < dataSize; i++) {
 				result[i] = malloc(sizeof(int) * 2);
 				printf("Process %c arrival : ", (char)(i+65));
-				scanf("%d", &result[i][0]);
+				scanf("%d", &result[i][0]); getchar();
 				printf("Process %c duration : ", (char)(i+65));
-				scanf("%d", &result[i][1]);
+				scanf("%d", &result[i][1]); getchar();
 				printf("\n");
 			}
 			return result;
 		}
-		else {
+		else
 			printf("Amount of process data must be greater than 0! Please try again.\n");
-		}
 	}
 	return NULL;
 }
 
+int getLeftTime(int *leftTimeArr, int col) {
+	int totalLeftTime = 0;
+		for (int i = 0; i < col; i++)
+			totalLeftTime += leftTimeArr[i];
+	return totalLeftTime;
+}
+
+/*
+ * you need to implement scheduler simlator test code.
+ */
+ 
 int main(int argc, char *argv[]){
 	while(1) {
 		int roofEndFlag = 1;
@@ -136,7 +141,7 @@ int main(int argc, char *argv[]){
 				printf("\n # FCFS\n\n   Option setup\n-----------------\n");
 				printf(" 1. Choose which input data to use.\n");
 				printf("   1. Type directly.\n   2. Use sample process data.\n");
-				int command2 = getUserCommand();
+				char command2 = getUserCommand();
 				if (command2 == '1') {
 					printf("\n");
 					int procSize;
@@ -149,8 +154,7 @@ int main(int argc, char *argv[]){
 					int fcfsResSize;
 					int *fcfs = calcFCFS(testData, procSize, &fcfsResSize);
 					printResult(testData, fcfs, procSize, fcfsResSize);
-					printf("Press any key to return to the main menu.");
-					getch();
+					printf("Return to the main menu.\n\n\n");
 					roofEndFlag = 0;
 				}
 				else if (command2 == '2') {
@@ -163,14 +167,12 @@ int main(int argc, char *argv[]){
 					printf("arrival   0  1  2\n");
 					printf("duration 15  1  1\n\n");
 					char command3 = getUserCommand();
-					
 					if (command3 == '1') {
 						int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
 						int fcfsResSize;
 						int *fcfs = calcFCFS(testData, 5, &fcfsResSize);
 						printResult(testData, fcfs, 5, fcfsResSize);
-						printf("Press any key to return to the main menu.");
-						getch();
+						printf("Return to the main menu.\n\n\n");
 						roofEndFlag = 0;
 					}
 					else if (command3 == '2') {
@@ -178,17 +180,14 @@ int main(int argc, char *argv[]){
 						int fcfsResSize;
 						int *fcfs = calcFCFS(testData, 3, &fcfsResSize);
 						printResult(testData, fcfs, 3, fcfsResSize);
-						printf("Press any key to return to the main menu.");
-						getch();
+						printf("Return to the main menu.\n\n\n");
 						roofEndFlag = 0;
 					}
-					else {
+					else
 						printf("Invalid command! Please try again.\n");
-					}
 				}
-				else {
+				else
 					printf("Invalid command! Please try again.\n");
-				}
 			}
 		}
 		else if (command == '2') {
@@ -200,7 +199,7 @@ int main(int argc, char *argv[]){
 				printf(" 1. Choose how much time quantum to use. (1~)\n");
 				printf("Enter your command : ");
 				int timeQuantum;
-				scanf("%d", &timeQuantum);
+				scanf("%d", &timeQuantum); getchar();
 				if (timeQuantum > 0) {
 					while (roofEndFlag) {
 						printf("\n # RR\n\n   Option setup\n-----------------\n");
@@ -222,8 +221,7 @@ int main(int argc, char *argv[]){
 							int rrResSize;
 							int *rr = calcRR(testData, procSize, timeQuantum, &rrResSize);
 							printResult(testData, rr, procSize, rrResSize);
-							printf("Press any key to return to the main menu.");
-							getch();
+							printf("Return to the main menu.\n\n\n");
 							roofEndFlag = 0;
 						}
 						else if (command2 == '2') {
@@ -240,14 +238,12 @@ int main(int argc, char *argv[]){
 								printf("arrival   0  2  4  6  8 10 12 14\n");
 								printf("duration  4  4  4  4  4  4  4  4\n\n");
 								char command3 = getUserCommand();
-								
 								if (command3 == '1') {
 									int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
 									int rrResSize;
 									int *rr = calcRR(testData, 5, timeQuantum, &rrResSize);
 									printResult(testData, rr, 5, rrResSize);
-									printf("Press any key to return to the main menu.");
-									getch();
+									printf("Return to the main menu.\n\n\n");
 									roofEndFlag = 0;
 								}
 								else if (command3 == '2') {
@@ -255,23 +251,19 @@ int main(int argc, char *argv[]){
 									int rrResSize;
 									int *rr = calcRR(testData, 8, timeQuantum, &rrResSize);
 									printResult(testData, rr, 8, rrResSize);
-									printf("Press any key to return to the main menu.");
-									getch();
+									printf("Return to the main menu.\n\n\n");
 									roofEndFlag = 0;
 								}
-								else {
+								else
 									printf("Invalid command! Please try again.\n");
-								}
 							}
 						}
-						else {
+						else
 							printf("Invalid command! Please try again.\n");
-						}
 					}
 				}
-				else {
+				else
 					printf("Time quantum must be greater than 0! Please try again.\n");
-				}
 				break;
 			}
 		}
@@ -285,7 +277,7 @@ int main(int argc, char *argv[]){
 				printf(" 1. Choose how much time quantum to use. (1~)\n");
 				printf("Enter your command : ");
 				int timeQuantum;
-				scanf("%d", &timeQuantum);
+				scanf("%d", &timeQuantum); getchar();
 				if (timeQuantum > 0) {
 					while (roofEndFlag) {
 						printf("\n # MLFQ\n\n   Option setup\n-----------------\n");
@@ -296,7 +288,7 @@ int main(int argc, char *argv[]){
 						printf(" 2. Choose how much of the queue MLFQ will use. (2~)\n");
 						printf("Enter your command : ");
 						int queueSize;
-						scanf("%d", &queueSize);
+						scanf("%d", &queueSize); getchar();
 						if (queueSize > 1) {
 							while (roofEndFlag) {
 								printf("\n # MLFQ\n\n   Option setup\n-----------------\n");
@@ -319,8 +311,7 @@ int main(int argc, char *argv[]){
 									int mlfqResSize;
 									int *mlfq = calcMLFQ(testData, procSize, timeQuantum, queueSize, &mlfqResSize);
 									printResult(testData, mlfq, procSize, mlfqResSize);
-									printf("Press any key to return to the main menu.");
-									getch();
+									printf("Return to the main menu.\n\n\n");
 									roofEndFlag = 0;
 								}
 								else if (command2 == '2') {
@@ -338,14 +329,12 @@ int main(int argc, char *argv[]){
 										printf("arrival   4  2  4  6  8 29 32 33\n");
 										printf("duration  8  6  4  5  2  8  1  6\n\n");
 										char command3 = getUserCommand();
-										
 										if (command3 == '1') {
 											int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
 											int mlfqResSize;
 											int *mlfq = calcMLFQ(testData, 5, timeQuantum, queueSize, &mlfqResSize);
 											printResult(testData, mlfq, 5, mlfqResSize);
-											printf("Press any key to return to the main menu.");
-											getch();
+											printf("Return to the main menu.\n\n\n");
 											roofEndFlag = 0;
 										}
 										else if (command3 == '2') {
@@ -353,28 +342,23 @@ int main(int argc, char *argv[]){
 											int mlfqResSize;
 											int *mlfq = calcMLFQ(testData, 8, timeQuantum, queueSize, &mlfqResSize);
 											printResult(testData, mlfq, 8, mlfqResSize);
-											printf("Press any key to return to the main menu.");
-											getch();
+											printf("Return to the main menu.\n\n\n");
 											roofEndFlag = 0;
 										}
-										else {
+										else
 											printf("Invalid command! Please try again.\n");
-										}
 									}
 								}
-								else {
+								else
 									printf("Invalid command! Please try again.\n");
-								}
 							}
 						}
-						else {
+						else
 							printf("Amount of queue must be greater than 1! Please try again.\n");
-						}
 					}
 				}
-				else {
+				else
 					printf("Time quantum must be greater than 0! Please try again.\n");
-				}
 				break;
 			}
 		}
@@ -396,8 +380,7 @@ int main(int argc, char *argv[]){
 					int lotteryResSize;
 					int *lottery = calcLottery(testData, procSize, &lotteryResSize);
 					printResult(testData, lottery, procSize, lotteryResSize);
-					printf("Press any key to return to the main menu.");
-					getch();
+					printf("Return to the main menu.\n\n\n");
 					roofEndFlag = 0;
 				}
 				else if (command2 == '2') {
@@ -410,14 +393,12 @@ int main(int argc, char *argv[]){
 					printf("arrival   0  0  0  0  0  0\n");
 					printf("duration  5  5  5  5  5  5\n\n");
 					char command3 = getUserCommand();
-					
 					if (command3 == '1') {
 						int testData[5][2] = {{0, 3}, {2, 6}, {4, 4}, {6, 5}, {8, 2}};
 						int lotteryResSize;
 						int *lottery = calcLottery(testData, 5, &lotteryResSize);
 						printResult(testData, lottery, 5, lotteryResSize);
-						printf("Press any key to return to the main menu.");
-						getch();
+						printf("Return to the main menu.\n\n\n");
 						roofEndFlag = 0;
 					}
 					else if (command3 == '2') {
@@ -425,49 +406,162 @@ int main(int argc, char *argv[]){
 						int lotteryResSize;
 						int *lottery = calcLottery(testData, 6, &lotteryResSize);
 						printResult(testData, lottery, 6, lotteryResSize);
-						printf("Press any key to return to the main menu.");
-						getch();
+						printf("Return to the main menu.\n\n\n");
 						roofEndFlag = 0;
 					}
-					else {
+					else
 						printf("Invalid command! Please try again.\n");
-					}
 				}
-				else {
+				else
 					printf("Invalid command! Please try again.\n");
-				}
 			}
 		}
-		else if (command == '5') {
+		else if (command == '5')
 			break;
-		}
-		else {
+		else
 			printf("Invalid command! Please try again.\n");
-		}
 		roofEndFlag = 1;
 	}
 }
 
-void printDev(int col, int leftServiceTimeArr[], struct Queue *queueList, int queueSize, int procTime, int result[]) {
-	printf("---------------------------------------------------------------------------\nleft service time : ");
-	for (int i = 0; i < col; i++)
-		printf("%d ", leftServiceTimeArr[i]);
-	printf("\n");
-	for (int i = 0; i < queueSize; i++) {
-		printf("L%d : ", (i+1));
-		qPrint(queueList + i);
+int* calcFCFS(int data[][2], int col,int *resSize) {
+	int tempData[col][2];
+	int tempX, tempY;
+	for (int i = 0; i < col; i++) // Sort the Process Data
+		for (int j = 0; j < 2; j++)
+			tempData[i][j] = data[i][j];
+			
+	for (int j = col-1; j > 0; j--)
+		for (int i = 0; i < col-1; i++)
+			if (tempData[i][0] > tempData[i+1][0]) {
+				tempX = tempData[i][0];
+				tempY = tempData[i][1];
+				tempData[i][0] = tempData[i+1][0];
+				tempData[i][1] = tempData[i+1][1];
+				tempData[i+1][0] = tempX;
+				tempData[i+1][1] = tempY;
+			}
+		
+	for (int i = 0; i < col; i++) //Recopy Data
+		for (int j = 0; j < 2; j++)
+			 data[i][j]= tempData[i][j];
+			 
+	int realTime = 0;
+	int totalProcessTime = calcTotalProcessTime(tempData, col); // Calculate totalProcessTime
+	int leftProcessTime = totalProcessTime;
+	int *resultData = malloc(sizeof(int) * totalProcessTime * 10);
+	int serviceData[col];
+	int checkProcess[col];
+	struct Queue q;
+	int tempQSize = 0;
+	int index = 0;
+	qInit(&q, totalProcessTime + 100);
+	for (int i = 0; i < col; i++) {
+		serviceData[i] = tempData[i][1];
+		checkProcess[i] = 0;
 	}
-	printf("result : ");
-	for (int i = 0; i < procTime+1; i++)
-		printf("%c ", (char)(result[i]+65));
-	printf("\n");
+	while(1) {
+		tempQSize = qSize(&q);
+		for (int i = 0; i < col; i++)
+			if (realTime >= tempData[i][0] && checkProcess[i] == 0) { // It queues when a process arrives.
+				for (int j = 0; j < serviceData[i]; j++) {
+					qPush(&q, i);
+					realTime++;
+					leftProcessTime--;
+				}
+				checkProcess[i] = 1;
+			}
+		if (qSize(&q) == tempQSize){	// If no jobs have arrived, wait.
+			qPush(&q, -1);
+			realTime++;
+			totalProcessTime++;
+		}
+		if (leftProcessTime == 0)	// Exit when all execution is finished.
+			break;
+	}
+	*resSize = totalProcessTime;
+	return q.data;
 }
 
-int getLeftTime(int *leftTimeArr, int col) {
-	int totalLeftTime = 0;
+int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
+	int tempData[col][2];
+	int tempX, tempY;
+	for (int i = 0; i < col; i++)  // Sort the process data.
+		for (int j = 0; j < 2; j++)
+			tempData[i][j] = data[i][j];
+			
+	for (int j = col-1; j > 0; j--)
+		for (int i = 0; i < col-1; i++)
+			if (tempData[i][0] > tempData[i+1][0]) {
+				tempX = tempData[i][0];
+				tempY = tempData[i][1];
+				tempData[i][0] = tempData[i+1][0];
+				tempData[i][1] = tempData[i+1][1];
+				tempData[i+1][0] = tempX;
+				tempData[i+1][1] = tempY;
+			}
+
+	for (int i = 0; i < col; i++)
+		for (int j = 0; j < 2; j++)
+			 data[i][j]= tempData[i][j];
+
+	int totalProcessTime = calcTotalProcessTime(tempData, col); // Calculate totalProcessTime
+	int *resultData = malloc(sizeof(int) * totalProcessTime * 10);
+	int realTime = 0;
+	int temp = -1;
+	int emptyCounter = 0;
+	int leftServiceTime = 0;
+	struct Queue q;
+	qInit(&q, totalProcessTime);
+	int serviceData[col];
+	int checkProcess[col];
+	for (int i = 0; i < col; i++) { // Initialiazaion
+		serviceData[i] = tempData[i][1];
+		checkProcess[i] = 0;
+	}
+	for (int i = 0; i < col; i++)
+		leftServiceTime += serviceData[i];
+	while (1) {	//Loop
 		for (int i = 0; i < col; i++)
-			totalLeftTime += leftTimeArr[i];
-	return totalLeftTime;
+			if (realTime >= tempData[i][0] && checkProcess[i] == 0) {   // It queues when a process arrives.
+				for (int j = 0; j < serviceData[i]; j++)
+					qPush(&q, i);
+				if (temp == qPeek(&q))	// If a new job arrives and there is a previous process running, the previous process is sent back.
+					for (int k = 0; k < serviceData[temp]; k++)
+						qPush(&q, qPop(&q));
+				checkProcess[i] = 1;
+			}
+		if (temp == qPeek(&q)) // Processes that were performed without any new arrivals are also backward.
+			for (int w = 0; w < serviceData[temp]; w++)
+				qPush(&q, qPop(&q));
+				
+		for (int i = 0; i < timeQuantum; i++) { // Executes as much as the time quantum.
+			if (qSize(&q) == 0) // Ends the loop if the queue is empty.
+				break;
+			leftServiceTime--;
+			temp = qPop(&q);								
+			resultData[realTime] = temp;							
+			serviceData[temp]--;
+			realTime++;		// If the process is successful, it will take time.			
+			if(temp != qPeek(&q)) // When the process has finished running, it exits the loop.
+				break;
+		}
+		if (qSize(&q) == 0) { // The part that handles spaces between processes.
+			emptyCounter++;
+			if(emptyCounter == 3) { 
+				resultData[realTime] =- 1;
+				realTime++;
+				totalProcessTime++;
+				emptyCounter = 0;
+			}
+		}
+		else
+			emptyCounter = 0;
+		if(leftServiceTime == 0) // Exit when all execution is finished.
+			break;
+	}
+	*resSize = totalProcessTime;	
+	return resultData;
 }
 
 int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSize) {
@@ -482,15 +576,9 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 	}
 	
 	//Analyze input data.
-	int lastArriveTime = 0; //last arrive time between processes
-	int firstArriveTime = data[0][0]; //first arrive time between processes
 	int totalServiceTime = 0; //minimum total process service time from first process arrival	
 	int *leftServiceTimeArr = malloc(sizeof(int) * col); //remaining service time temporary storage for each process
 	for (int i = 0; i < col; i++) {
-		if (data[i][0] > lastArriveTime)
-			lastArriveTime = data[i][0];
-		if (data[i][0] < firstArriveTime)
-			firstArriveTime = data[i][0];
 		totalServiceTime += data[i][1];
 		leftServiceTimeArr[i] = data[i][1];
 	}
@@ -506,10 +594,6 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 	int curProc; //the process currently being executed by CPU
 	int quantumTimer = timeQuantum; //time quantum counter
 	while (getLeftTime(leftServiceTimeArr, col) > 0) {
-		/////
-		printf("===================================================================================================\nprocess timer : %d\n===================================================================================================\n", procTime);
-		/////
-		
 		//Add new process to highest priority queue when there is a process currently in procTime.
 		//If there are multiple processes arriving at the same time, a process with a smaller array index is added to the queue first. 
 		// Because the process is not named in the current simulator.
@@ -530,11 +614,6 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 			quantumTimer = timeQuantum;
 		}
 		
-		/////
-		printf("1. Add ");
-		printDev(col, leftServiceTimeArr, queueList, queueSize, procTime, result);
-		/////
-		
 		//Execute process in the highest priority queue. 
 		for (int i = 0; i < queueSize; i++)
 			if (qSize(&queueList[i]) > 0) {
@@ -543,211 +622,40 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 			}
 			else
 				curProc = -1;
-		if (curProc == -1) { //Continue when there are no processes to execute.
-			procTime++;
-			continue;
-		}
-		result[procTime] = curProc; //Push to result.
-		leftServiceTimeArr[curProc]--;
-		
-		/////
-		printf("2. Process ");
-		printDev(col, leftServiceTimeArr, queueList, queueSize, procTime, result);
-		/////
-		
-		//When there are remaining jobs and there are another processes scheduled in scheduler, drop it to the queue below.
-		int totalQueueSize = 0;
-		for (int i = 0; i < queueSize; i++)
-			totalQueueSize += qSize(queueList+i);
-		for (int i = 0; i < queueSize; i++)
-			if (qSize(&queueList[i]) > 0) {
-				if (curProc == qPeek(&queueList[i]))
-					quantumTimer--;
-				else
-					quantumTimer = timeQuantum;
-				if (quantumTimer <= 0 && totalQueueSize != leftServiceTimeArr[curProc]) {
-					for (int j = 0; j < leftServiceTimeArr[curProc]; j++)
-						if (i != queueSize - 1)
-							qPush(&queueList[i+1], qPop(&queueList[i]));
-						else //Push to itself because there is no queue below.
-							qPush(&queueList[i], qPop(&queueList[i]));
-					quantumTimer = timeQuantum;
-				}
-				break;
-			}
+		if (curProc > -1) { //Continue roof when there are no processes to execute.
+			result[procTime] = curProc; //Push to result.
+			leftServiceTimeArr[curProc]--;
 			
-		/////
-		printf("3. Quantum ");
-		printDev(col, leftServiceTimeArr, queueList, queueSize, procTime, result);
-		/////
-		
+			//When there are remaining jobs and there are another processes scheduled in scheduler, drop it to the queue below.
+			int totalQueueSize = 0;
+			for (int i = 0; i < queueSize; i++)
+				totalQueueSize += qSize(queueList+i);
+			for (int i = 0; i < queueSize; i++)
+				if (qSize(&queueList[i]) > 0) {
+					if (curProc == qPeek(&queueList[i]))
+						quantumTimer--;
+					else
+						quantumTimer = timeQuantum;
+					if (quantumTimer <= 0 && totalQueueSize != leftServiceTimeArr[curProc]) {
+						for (int j = 0; j < leftServiceTimeArr[curProc]; j++)
+							if (i != queueSize - 1)
+								qPush(&queueList[i+1], qPop(&queueList[i]));
+							else //Push to itself because there is no queue below.
+								qPush(&queueList[i], qPop(&queueList[i]));
+						quantumTimer = timeQuantum;
+					}
+					break;
+				}
+		}
 		procTime++;
 	}
 	*resSize = procTime;
 	return result;
 }
 
-int* calcFCFS(int data[][2], int col,int *resSize) {
-	int tempData[col][2];
-	int tempX, tempY;
-	for (int i = 0; i < col; i++) {
-		for (int j = 0; j < 2; j++) {
-			tempData[i][j] = data[i][j];
-		}
-	}
-	for(int j=col-1;j>0;j--){
-		for (int i = 0; i < col-1; i++) {
-			if (tempData[i][0] > tempData[i + 1][0]) {
-				tempX = tempData[i][0];
-				tempY = tempData[i][1];
-				tempData[i][0] = tempData[i + 1][0];
-				tempData[i][1] = tempData[i + 1][1];
-				tempData[i + 1][0] = tempX;
-				tempData[i + 1][1] = tempY;
-			}
-		}
-	}
-	for (int i = 0; i < col; i++) {
-		for (int j = 0; j < 2; j++) {
-			 data[i][j]= tempData[i][j];
-		}
-	}
-	int realTime=0;
-	int totalProcessTime=calcTotalProcessTime(tempData,col);
-	int leftProcessTime=totalProcessTime;
-	int *resultData = malloc(sizeof(int) * totalProcessTime * 10);
-	int serviceData[col];
-	int checkProcess[col];
-	struct Queue q;
-	int tempQSize=0;
-	int index=0;
-	qInit(&q, totalProcessTime+100);
-	for(int i=0;i<col;i++){
-		serviceData[i]=tempData[i][1];
-		checkProcess[i]=0;
-	}
-	printf("%d %d",qSize(&q),leftProcessTime);
-	while(1){
-		tempQSize=qSize(&q);
-		for(int i=0;i<col;i++){
-			if(realTime>=tempData[i][0] && checkProcess[i]==0){
-				for(int j=0;j<serviceData[i];j++){
-					qPush(&q,i);
-					realTime++;
-					leftProcessTime--;
-				}
-				checkProcess[i]=1;
-			}
-		}
-		if(qSize(&q)==tempQSize){
-			qPush(&q,-1);
-			realTime++;
-			totalProcessTime++;
-		}
-		if(leftProcessTime==0)
-			break;
-	}
-	
-	printf("%d",totalProcessTime);
-	*resSize=totalProcessTime;
-	return q.data;
-}
-
-int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
-	int tempData[col][2];
-	int tempX, tempY;
-	for (int i = 0; i < col; i++) {
-		for (int j = 0; j < 2; j++) {
-			tempData[i][j] = data[i][j];
-		}
-	}
-	for(int j=col-1;j>0;j--){
-		for (int i = 0; i < col-1; i++) {
-			if (tempData[i][0] > tempData[i + 1][0]) {
-				tempX = tempData[i][0];
-				tempY = tempData[i][1];
-				tempData[i][0] = tempData[i + 1][0];
-				tempData[i][1] = tempData[i + 1][1];
-				tempData[i + 1][0] = tempX;
-				tempData[i + 1][1] = tempY;
-			}
-		}
-	}	
-	for (int i = 0; i < col; i++) {
-		for (int j = 0; j < 2; j++) {
-			 data[i][j]= tempData[i][j];
-		}
-	}
-	int totalProcessTime=calcTotalProcessTime(tempData,col);
-	int *resultData = malloc(sizeof(int) * totalProcessTime * 100);
-	int realTime=0;
-	int temp=-1;
-	int emptyCounter=0;
-	int leftServiceTime=0;
-	struct Queue q;
-	qInit(&q, totalProcessTime);
-	int serviceData[col];
-	int checkProcess[col];
-	for(int i=0;i<col;i++){
-		serviceData[i]=tempData[i][1];
-		checkProcess[i]=0;
-	}
-	for(int i=0;i<col;i++){
-			leftServiceTime+=serviceData[i];
-	}
-	while(1){	
-		for(int i=0;i<col;i++){
-			if(realTime>=tempData[i][0] && checkProcess[i]==0){
-				for(int j=0; j<serviceData[i];j++){
-						qPush(&q,i);
-				}
-				if(temp==q.data[q.rear+1]){
-					for(int k=0; k<serviceData[temp];k++){
-						qPush(&q,qPop(&q));
-					}
-				}
-				checkProcess[i]=1;
-			}
-		}
-		if(temp==q.data[q.rear+1]){
-				for(int w=0; w<serviceData[temp];w++){
-				qPush(&q,qPop(&q));
-			}
-		}
-		for(int i=0; i<timeQuantum;i++){
-			if(qSize(&q)==0)
-				break;
-			leftServiceTime--;
-			temp=qPop(&q);								
-			resultData[realTime]=temp;							
-			serviceData[temp]--;
-			realTime++;						
-			if(temp!=q.data[q.rear+1] ){
-				break;
-			}
-		}
-		if(qSize(&q)==0){
-			emptyCounter++;
-			if(emptyCounter==3){
-				resultData[realTime]=-1;
-				realTime++;
-				totalProcessTime++;
-				emptyCounter=0;
-			}
-		}
-		else
-			emptyCounter=0;
-		if(leftServiceTime==0)
-			break;
-	}
-	*resSize=totalProcessTime;	
-	return resultData;
-}
-
 int* calcLottery(int data[][2], int col, int *resSize) {
 	if (col < 1)
 		return NULL;
-	
 	//Analyze input data.
 	int totalServiceTime = 0; //minimum total process service time from first process arrival	
 	int *leftServiceTimeArr = malloc(sizeof(int) * col); //remaining service time temporary storage for each process
@@ -782,7 +690,7 @@ int* calcLottery(int data[][2], int col, int *resSize) {
 		int ticketAmount = 0;
 		for (int i = 0; i < col; i++)
 			ticketAmount += ticketArr[i];
-		if (ticketAmount > 0) {
+		if (ticketAmount > 0) { //Continue roof when there are no tickets to pick.
 			int r = rand() % ticketAmount;
 			for (int i = 0; i < col; i++)
 				if (r >= ticketArr[i])
@@ -847,8 +755,7 @@ void printResult(int inputData[][2], int resData[], int col, int resSize) {
 		else
 			printf("   ");
 	}
-	printf("\n");
-	printf("       ");
+	printf("\n       ");
 	for (int i = 0; i < resSize; i++) {
 		int arrCnt = 0;
 		for (int j = 0; j < col; j++)
@@ -859,8 +766,7 @@ void printResult(int inputData[][2], int resData[], int col, int resSize) {
 		else
 			printf("   ");
 	}
-	printf("\n");
-	printf("       ");
+	printf("\n       ");
 	for (int i = 0; i < resSize; i++) {
 		int arrCnt = 0;
 		for (int j = 0; j < col; j++)
@@ -871,17 +777,15 @@ void printResult(int inputData[][2], int resData[], int col, int resSize) {
 		else
 			printf("   ");
 	}
-	printf("\n");
-	printf("-------");
+	printf("\n-------");
 	for (int i = 0; i < resSize; i++)
-		printf("---", i);
-	printf("\n");
-	printf("Time | ");
+		printf("---");
+	printf("\nTime | ");
 	for (int i = 0; i < resSize; i++)
 		printf("%2d ", i);
 	printf("\n-------");
 	for (int i = 0; i < resSize; i++)
-		printf("---", i);
+		printf("---");
 	printf("\n");
 	for (int i = 0; i < col; i++) {
 		printf("   %c | ", (char)(i+65));
@@ -898,35 +802,29 @@ void printResult(int inputData[][2], int resData[], int col, int resSize) {
 			printf(" - ");
 		else
 			printf("%2c ", (char)(resData[i]+65));
-	printf("\n");
-	printf("-------");
+	printf("\n-------");
 	for (int i = 0; i < resSize; i++)
-		printf("---", i);
-	printf("\n\n");
-	printf("------------------------");
+		printf("---");
+	printf("\n\n------------------------");
 	for (int i = 0; i < col; i++)
-		printf("-----", i);
-	printf("\n");
-	printf(" (Analyzation)  |");
+		printf("-----");
+	printf("\n (Analyzation)  |");
 	for (int i = 0; i < col; i++)
 		printf("%4c ", (char)(i+65));
-	printf("    AVG \n");
-	printf("------------------------");
+	printf("    AVG \n------------------------");
 	for (int i = 0; i < col; i++)
-		printf("-----", i);
+		printf("-----");
 	printf("\n");
 	printf("  Response time |");
 	for (int i = 0; i < col; i++)
 		printf("%4d ", responseTime[i]);
 	printf(" %6.2f", avgResponseTime);
-	printf("\n");
-	printf("Turnaround time |");
+	printf("\nTurnaround time |");
 	for (int i = 0; i < col; i++)
 		printf("%4d ", turnaroundTime[i]);
 	printf(" %6.2f", avgTurnaroundTime);
-	printf("\n");
-	printf("------------------------");
+	printf("\n------------------------");
 	for (int i = 0; i < col; i++)
-		printf("-----", i);
+		printf("-----");
 	printf("\n");
 }
