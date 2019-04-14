@@ -152,7 +152,7 @@ int main(int argc, char *argv[]){
 					int fcfsResSize;
 					int *fcfs = calcFCFS(testData, procSize, &fcfsResSize);
 					printResult(testData, fcfs, procSize, fcfsResSize);
-					printf("Press any key to return to the main menu.");
+					printf("Return to the main menu.\n\n\n");
 					getch();
 					roofEndFlag = 0;
 				}
@@ -789,13 +789,13 @@ void printResult(int inputData[][2], int resData[], int col, int resSize) {
 	}
 	printf("\n-------");
 	for (int i = 0; i < resSize; i++)
-		printf("---", i);
+		printf("---");
 	printf("\nTime | ");
 	for (int i = 0; i < resSize; i++)
 		printf("%2d ", i);
 	printf("\n-------");
 	for (int i = 0; i < resSize; i++)
-		printf("---", i);
+		printf("---");
 	printf("\n");
 	for (int i = 0; i < col; i++) {
 		printf("   %c | ", (char)(i+65));
@@ -814,16 +814,16 @@ void printResult(int inputData[][2], int resData[], int col, int resSize) {
 			printf("%2c ", (char)(resData[i]+65));
 	printf("\n-------");
 	for (int i = 0; i < resSize; i++)
-		printf("---", i);
+		printf("---");
 	printf("\n\n------------------------");
 	for (int i = 0; i < col; i++)
-		printf("-----", i);
+		printf("-----");
 	printf("\n (Analyzation)  |");
 	for (int i = 0; i < col; i++)
 		printf("%4c ", (char)(i+65));
 	printf("    AVG \n------------------------");
 	for (int i = 0; i < col; i++)
-		printf("-----", i);
+		printf("-----");
 	printf("\n");
 	printf("  Response time |");
 	for (int i = 0; i < col; i++)
@@ -835,6 +835,6 @@ void printResult(int inputData[][2], int resData[], int col, int resSize) {
 	printf(" %6.2f", avgTurnaroundTime);
 	printf("\n------------------------");
 	for (int i = 0; i < col; i++)
-		printf("-----", i);
+		printf("-----");
 	printf("\n");
 }
