@@ -2,7 +2,7 @@
 *	DKU Operating System Lab
 *	    Lab1 (Scheduler Algorithm Simulator)
 *	    Student id : 32141868, 32144697
-*	    Student name : ¹ÚÀ¯Çö, ÃÖ±¤Áø 
+*	    Student name :
 *
 *   lab1_sched.c :
 *       - Lab1 source file.
@@ -10,7 +10,7 @@
 *
 */
 
-//#include <aio.h>
+#include <aio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -24,9 +24,9 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <pthread.h>
-//#include <asm/unistd.h>
+#include <asm/unistd.h>
 
-#include "include/lab1_sched_types.h"
+#include "lab1_sched_types.h"
 
 // Queue implementation
 struct Queue {
@@ -97,10 +97,6 @@ int getLeftTime(int *leftTimeArr, int col) {
 /*
  * you need to implement FCFS, RR, SPN, SRT, HRRN, MLFQ scheduler. 
  */
- 
-int main(int argc, char *argv[]){
-	
-}
 
 int* calcFCFS(int data[][2], int col,int *resSize) {
 	int tempData[col][2];
