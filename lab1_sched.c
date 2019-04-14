@@ -437,7 +437,7 @@ int main(int argc, char *argv[]){
 int* calcFCFS(int data[][2], int col,int *resSize) {
 	int tempData[col][2];
 	int tempX, tempY;
-	for (int i = 0; i < col; i++)
+	for (int i = 0; i < col; i++) // Sort the Process Data
 		for (int j = 0; j < 2; j++)
 			tempData[i][j] = data[i][j];
 			
@@ -452,12 +452,12 @@ int* calcFCFS(int data[][2], int col,int *resSize) {
 				tempData[i+1][1] = tempY;
 			}
 		
-	for (int i = 0; i < col; i++)
+	for (int i = 0; i < col; i++) //Recopy Data
 		for (int j = 0; j < 2; j++)
 			 data[i][j]= tempData[i][j];
 			 
 	int realTime = 0;
-	int totalProcessTime = calcTotalProcessTime(tempData, col);
+	int totalProcessTime = calcTotalProcessTime(tempData, col); // Calculate totalProcessTime
 	int leftProcessTime = totalProcessTime;
 	int *resultData = malloc(sizeof(int) * totalProcessTime * 10);
 	int serviceData[col];
@@ -473,7 +473,7 @@ int* calcFCFS(int data[][2], int col,int *resSize) {
 	while(1) {
 		tempQSize = qSize(&q);
 		for (int i = 0; i < col; i++)
-			if (realTime >= tempData[i][0] && checkProcess[i] == 0) {
+			if (realTime >= tempData[i][0] && checkProcess[i] == 0) { // It queues when a process arrives.
 				for (int j = 0; j < serviceData[i]; j++) {
 					qPush(&q, i);
 					realTime++;
@@ -481,12 +481,12 @@ int* calcFCFS(int data[][2], int col,int *resSize) {
 				}
 				checkProcess[i] = 1;
 			}
-		if (qSize(&q) == tempQSize){
+		if (qSize(&q) == tempQSize){	// If no jobs have arrived, wait.
 			qPush(&q, -1);
 			realTime++;
 			totalProcessTime++;
 		}
-		if (leftProcessTime == 0)
+		if (leftProcessTime == 0)	// Exit when all execution is finished.
 			break;
 	}
 	*resSize = totalProcessTime;
@@ -496,7 +496,7 @@ int* calcFCFS(int data[][2], int col,int *resSize) {
 int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 	int tempData[col][2];
 	int tempX, tempY;
-	for (int i = 0; i < col; i++)
+	for (int i = 0; i < col; i++)  // Sort the process data.
 		for (int j = 0; j < 2; j++)
 			tempData[i][j] = data[i][j];
 			
@@ -515,7 +515,7 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 		for (int j = 0; j < 2; j++)
 			 data[i][j]= tempData[i][j];
 
-	int totalProcessTime = calcTotalProcessTime(tempData, col);
+	int totalProcessTime = calcTotalProcessTime(tempData, col); // Calculate totalProcessTime
 	int *resultData = malloc(sizeof(int) * totalProcessTime * 10);
 	int realTime = 0;
 	int temp = -1;
@@ -525,40 +525,40 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 	qInit(&q, totalProcessTime);
 	int serviceData[col];
 	int checkProcess[col];
-	for (int i = 0; i < col; i++) {
+	for (int i = 0; i < col; i++) { // Initialiazaion
 		serviceData[i] = tempData[i][1];
 		checkProcess[i] = 0;
 	}
 	for (int i = 0; i < col; i++)
 		leftServiceTime += serviceData[i];
-	while (1) {	
+	while (1) {	//Loop
 		for (int i = 0; i < col; i++)
-			if (realTime >= tempData[i][0] && checkProcess[i] == 0) {
+			if (realTime >= tempData[i][0] && checkProcess[i] == 0) {   // It queues when a process arrives.
 				for (int j = 0; j < serviceData[i]; j++)
 					qPush(&q, i);
-				if (temp == qPeek(&q))
+				if (temp == qPeek(&q))	// If a new job arrives and there is a previous process running, the previous process is sent back.
 					for (int k = 0; k < serviceData[temp]; k++)
 						qPush(&q, qPop(&q));
 				checkProcess[i] = 1;
 			}
-		if (temp == qPeek(&q))
+		if (temp == qPeek(&q)) // Processes that were performed without any new arrivals are also backward.
 			for (int w = 0; w < serviceData[temp]; w++)
 				qPush(&q, qPop(&q));
 				
-		for (int i = 0; i < timeQuantum; i++) {
-			if (qSize(&q) == 0)
+		for (int i = 0; i < timeQuantum; i++) { // Executes as much as the time quantum.
+			if (qSize(&q) == 0) // Ends the loop if the queue is empty.
 				break;
 			leftServiceTime--;
 			temp = qPop(&q);								
 			resultData[realTime] = temp;							
 			serviceData[temp]--;
-			realTime++;					
-			if(temp != qPeek(&q))
+			realTime++;		// If the process is successful, it will take time.			
+			if(temp != qPeek(&q)) // When the process has finished running, it exits the loop.
 				break;
 		}
-		if (qSize(&q) == 0) {
+		if (qSize(&q) == 0) { // The part that handles spaces between processes.
 			emptyCounter++;
-			if(emptyCounter == 3) {
+			if(emptyCounter == 3) { 
 				resultData[realTime] =- 1;
 				realTime++;
 				totalProcessTime++;
@@ -567,7 +567,7 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 		}
 		else
 			emptyCounter = 0;
-		if(leftServiceTime == 0)
+		if(leftServiceTime == 0) // Exit when all execution is finished.
 			break;
 	}
 	*resSize = totalProcessTime;	
