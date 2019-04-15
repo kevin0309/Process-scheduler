@@ -281,13 +281,12 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 			}
 		
 		//When a new process is scheduled, if there is a process that was previously running, drop it to the queue below.
-		if (pushCnt != -1)
-			if (qSize(&queueList[0]) > data[pushCnt][1]) {
-				int latestProc = result[procTime-1];
-				while (qPeek(&queueList[0]) == latestProc && pushCnt != latestProc)
-					qPush(&queueList[1], qPop(&queueList[0]));
-				quantumTimer = timeQuantum;
-			}
+		if (qSize(&queueList[0]) > data[pushCnt][1] && pushCnt != -1) {
+			int latestProc = result[procTime-1];
+			while (qPeek(&queueList[0]) == latestProc && pushCnt != latestProc)
+				qPush(&queueList[1], qPop(&queueList[0]));
+			quantumTimer = timeQuantum;
+		}
 		
 		//Execute process in the highest priority queue. 
 		for (int i = 0; i < queueSize; i++)
