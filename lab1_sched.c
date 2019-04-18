@@ -302,7 +302,7 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 				curProc = qPop(&queueList[i]);
 				break;
 			}
-			elser
+			else
 				curProc = -1;
 		if (curProc > -1) { //Continue roof when there are no processes to execute.
 			result[procTime] = curProc; //Push to result.
