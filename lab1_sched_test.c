@@ -220,11 +220,11 @@ int main(int argc, char *argv[]){
 						printf("->2. queue size\n");
 						printf("  3. input process data\n");
 						printf("-----------------\n");
-						printf(" 2. Choose how much of the queue MLFQ will use. (2~)\n");
+						printf(" 2. Choose how much of the queue MLFQ will use. (1~)\n");
 						printf("Enter your command : ");
 						int queueSize;
 						scanf("%d", &queueSize); getchar();
-						if (queueSize > 1) {
+						if (queueSize > 0) {
 							while (roofEndFlag) {
 								printf("\n # MLFQ\n\n   Option setup\n-----------------\n");
 								printf("  1. time quantum\n");
@@ -289,7 +289,7 @@ int main(int argc, char *argv[]){
 							}
 						}
 						else
-							printf("Amount of queue must be greater than 1! Please try again.\n");
+							printf("Amount of queue must be greater than 0! Please try again.\n");
 					}
 				}
 				else

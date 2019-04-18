@@ -236,7 +236,7 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 }
 
 int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSize) {
-	if (col < 1 || queueSize < 2)
+	if (col < 1 || queueSize < 1)
 		return NULL;
 	//Initialize queues for MLFQ.
 	struct Queue *queueList = malloc(sizeof(struct Queue) * queueSize);
@@ -281,6 +281,8 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 		int totalQueueSize = 0;
 		for (int i = 0; i < queueSize; i++)
 			totalQueueSize += qSize(queueList+i);
+		if (leftServiceTimeArr[curProc] == 0)
+			quantumTimer = timeQuantum;
 		for (int i = 0; i < queueSize; i++)
 			if (qSize(&queueList[i]) > 0) {
 				if (curProc == qPeek(&queueList[i]))
@@ -307,8 +309,6 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 		if (curProc > -1) { //Continue roof when there are no processes to execute.
 			result[procTime] = curProc; //Push to result.
 			leftServiceTimeArr[curProc]--;
-			if (leftServiceTimeArr[curProc] == 0)
-				quantumTimer = timeQuantum;
 		}
 		procTime++;
 	}
