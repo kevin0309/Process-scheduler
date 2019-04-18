@@ -265,7 +265,7 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 	
 	//Main process roof start. Exit when all the processes are finished.
 	int procTime = 0; //CPU process timer
-	int curProc; //the process currently being executed by CPU
+	int curProc = -1; //the process currently being executed by CPU
 	int quantumTimer = timeQuantum; //time quantum counter
 	while (getLeftTime(leftServiceTimeArr, col) > 0) {
 		//Add new process to highest priority queue when there is a process currently in procTime.
@@ -280,13 +280,24 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 					pushCnt = i;
 			}
 		
-		//When a new process is scheduled, if there is a process that was previously running, drop it to the queue below.
-		if (qSize(&queueList[0]) > data[pushCnt][1] && pushCnt != -1) {
-			int latestProc = result[procTime-1];
-			while (qPeek(&queueList[0]) == latestProc && pushCnt != latestProc)
-				qPush(&queueList[1], qPop(&queueList[0]));
-			quantumTimer = timeQuantum;
-		}
+		//When there are remaining jobs and there are another processes scheduled in scheduler, drop it to the queue below.
+		int totalQueueSize = 0;
+		for (int i = 0; i < queueSize; i++)
+			totalQueueSize += qSize(queueList+i);
+		for (int i = 0; i < queueSize; i++)
+			if (qSize(&queueList[i]) > 0) {
+				if (curProc == qPeek(&queueList[i]))
+					quantumTimer--;
+				if (quantumTimer <= 0 && totalQueueSize != leftServiceTimeArr[curProc]) {
+					for (int j = 0; j < leftServiceTimeArr[curProc]; j++)
+						if (i != queueSize - 1)
+							qPush(&queueList[i+1], qPop(&queueList[i]));
+						else //Push to itself because there is no queue below.
+							qPush(&queueList[i], qPop(&queueList[i]));
+					quantumTimer = timeQuantum;
+					break;
+				}
+			}
 		
 		//Execute process in the highest priority queue. 
 		for (int i = 0; i < queueSize; i++)
@@ -294,32 +305,13 @@ int* calcMLFQ(int data[][2], int col, int timeQuantum, int queueSize, int *resSi
 				curProc = qPop(&queueList[i]);
 				break;
 			}
-			else
+			elser
 				curProc = -1;
 		if (curProc > -1) { //Continue roof when there are no processes to execute.
 			result[procTime] = curProc; //Push to result.
 			leftServiceTimeArr[curProc]--;
-			
-			//When there are remaining jobs and there are another processes scheduled in scheduler, drop it to the queue below.
-			int totalQueueSize = 0;
-			for (int i = 0; i < queueSize; i++)
-				totalQueueSize += qSize(queueList+i);
-			for (int i = 0; i < queueSize; i++)
-				if (qSize(&queueList[i]) > 0) {
-					if (curProc == qPeek(&queueList[i]))
-						quantumTimer--;
-					else
-						quantumTimer = timeQuantum;
-					if (quantumTimer <= 0 && totalQueueSize != leftServiceTimeArr[curProc]) {
-						for (int j = 0; j < leftServiceTimeArr[curProc]; j++)
-							if (i != queueSize - 1)
-								qPush(&queueList[i+1], qPop(&queueList[i]));
-							else //Push to itself because there is no queue below.
-								qPush(&queueList[i], qPop(&queueList[i]));
-						quantumTimer = timeQuantum;
-					}
-					break;
-				}
+			if (leftServiceTimeArr[curProc] == 0)
+				quantumTimer = timeQuantum;
 		}
 		procTime++;
 	}
