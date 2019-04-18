@@ -200,9 +200,6 @@ int* calcRR(int data[][2], int col, int timeQuantum,int *resSize) {
 			if (realTime >= tempData[i][0] && checkProcess[i] == 0) {   // It queues when a process arrives.
 				for (int j = 0; j < serviceData[i]; j++)
 					qPush(&q, i);
-				if (temp == qPeek(&q))	// If a new job arrives and there is a previous process running, the previous process is sent back.
-					for (int k = 0; k < serviceData[temp]; k++)
-						qPush(&q, qPop(&q));
 				checkProcess[i] = 1;
 			}
 		if (temp == qPeek(&q)) // Processes that were performed without any new arrivals are also backward.
